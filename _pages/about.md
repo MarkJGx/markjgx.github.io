@@ -3,6 +3,9 @@ permalink: /about/
 title: "About"
 ---
 
-Tempor velit sint sunt ipsum tempor enim ad qui ullamco. Est dolore anim ad velit duis dolore minim sunt aliquip amet commodo labore. Ut eu pariatur aute ea aute excepteur laborum. Esse ea esse excepteur minim mollit qui cillum excepteur ex dolore magna. Labore deserunt fugiat incididunt incididunt sint ea. Consequat dolore aute laboris quis proident quis non et est consectetur ex eiusmod sit culpa.
+I'm Mark J. G (go by: *mjg*, MarkJGx), a full-time programmer of ~ 11 years (circa 2011). `C++/Rust` right now.
 
-Cupidatat ea do et in excepteur in. Ad nostrud ut est esse eu duis ea sunt eiusmod. Aliquip tempor veniam sint elit fugiat. Velit incididunt laboris amet incididunt labore dolore irure velit excepteur commodo deserunt laborum. Consectetur eu fugiat veniam veniam Lorem labore magna eiusmod. Ea occaecat reprehenderit pariatur consectetur minim labore ut aliquip.
+If you enjoy peculiar humour and extremely nerdy, in-depth technical topics, then this is the blog for you! I think of this blog as my personal archive of documented execution and ideas, ranging from howto's and what I'm working on. 
+
+> I will do my best to guarantee that there's always an RSS feed available for this blog, that'll it work without any Javascript, and on slow mobile devices with a touchscreen. If I don't catch something, please get in touch here:
+> * `contact (at) markjg (dot) com`
