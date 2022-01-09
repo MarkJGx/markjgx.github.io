@@ -124,7 +124,7 @@ repository: "MarkJGx/markjgx.github.io"
 comments:
   provider: "utterances"
   utterances:
-    theme: "icy-dark" # "github-dark"
+    theme: "github-light" # "github-dark"
     issue_term: "pathname"
 
 # HTML Compression
