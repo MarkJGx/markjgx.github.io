@@ -15,7 +15,7 @@ Add a new global environment variable with the following syntax:
 UE4_GITDEPS_ARGS=--cache=C:\Users\markjg\clones\GitDepsCache --cache-days=180 --cache-size-multiplier=5
 ```
 
-The important line here is the `--cache=YourLocalCacheDirectoryPathHere`, that's where you local cache will live. This directory can rapidly grow in size, at the time of writing my cache directory takes up around 26GB's. 
+The important line here is the `--cache=YourLocalCacheDirectoryPathHere`, that's where your local cache will live. This directory can rapidly grow in size, at the time of writing my cache directory takes up around 26GB's. You're done!
 
 How does this work? Every time you run the engine's `./Setup` executable, that'll will invoke the `GitDependency` tool. Which checks for any invalid (outdated, non-existent) resources and opts to download them. Dependency fetches also happen after certain git operations, specifically on post checkout and post merge (Invoked by git hooks `.git\hooks`, as `post-checkout`, `post-merge`).
 
