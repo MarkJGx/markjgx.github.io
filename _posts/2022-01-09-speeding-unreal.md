@@ -7,9 +7,9 @@ tags:
   - tips
 ---
 
-You can significantly speed up your Unreal Engine, engine not project, workflow by opting to locally cache Unreal's binary dependencies in a local directory. This is especially useful if you constantly switching between engine versions, or want to have several local repos checked out constantly. 
+You can significantly speed up your Unreal Engine, **engine** not project, workflow by opting to locally cache Unreal's binary dependencies in a local directory. This is especially useful if you are constantly switching between engine versions, or want to have several local repos checked out. 
 
-Add a new global environment variable with the following syntax:
+Add a new global environment variable with the following name and value:
 
 ```powershell
 UE4_GITDEPS_ARGS=--cache=C:\Users\markjg\clones\GitDepsCache --cache-days=180 --cache-size-multiplier=5
