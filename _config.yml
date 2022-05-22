@@ -133,3 +133,10 @@ compress_html:
   clippings: all
   ignore:
     envs: development
+
+# https://github.com/jeffreytse/jekyll-spaceship#configuration
+jekyll-spaceship:
+  # default enabled processors
+  processors:
+    - mathjax-processor
+    - media-processor
