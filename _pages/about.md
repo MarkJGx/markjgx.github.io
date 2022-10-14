@@ -11,10 +11,11 @@ I will do my best to guarantee that:
 * There's always an RSS feed available for this blog.
 * That'll it work without any JavaScript. 
 * and on slow mobile devices with a touchscreen. 
-* If I don't catch something, please get in touch here: `contact (at) markjg (dot) com`
+
+If I don't catch something, please get in touch here: `contact (at) markjg (dot) com`
 
 I also run the game development blog for my games' studio here:
-(https://devblog.chemicalheads.com)[https://devblog.chemicalheads.com]
+[https://devblog.chemicalheads.com](https://devblog.chemicalheads.com)
 
 All code on this website is under the WTFPL license.
 
