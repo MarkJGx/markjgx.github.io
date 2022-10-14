@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<!--
+  Minimal Mistakes Jekyll Theme 4.24.0 by Michael Rose
+  Copyright 2013-2020 Michael Rose - mademistakes.com | @mmistakes
+  Free for personal and commercial use under the MIT license
+  https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
+--><html lang="en" class="no-js">
+  <head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+
+<!-- begin _includes/seo.html --><title>Looking up values in a TMap/TSet with just the hash key. - Mark J. G’s programming blog</title>
+<meta name="description" content="How do you look up a value in a TMap/TSet without the underlying key type?  Let’s say you just have the hash key (uint32 that you can get from GetTypeHash) and nothing else. Do not fret!  The Resolution (Code)  I’ve crafted some helpers util’s to help you find a value inside of any TMap (easily translates to TSet). Here’s how you use TTypeHashOnlyKeyFunc:   // DO NOT USE the TTypeHashOnlyKeyFunc as a actual KeyFunc on your map/set, it is only worth using for anything lookup related. TMap&lt;FExampleKey, FExampleValue&gt; KeyValueMap;   uint32 HashKey = GetTypeHash(Key); TTypeHashOnlyKeyFunc&lt;FExampleKey, FExampleValue&gt;::FHashHelper Comparable(HashKey); FExampleValue* Value = Comparable.FindByHash(KeyValueMap);  if(Value) {   // Woohoo }     template &lt;typename TKeyType, typename TValueType, bool bInAllowDuplicateKeys = false, typename TSetAllocator = FDefaultSetAllocator&gt; struct TTypeHashOnlyKeyFunc : public TDefaultMapKeyFuncs&lt;TKeyType, TValueType, bInAllowDuplicateKeys&gt; {   // Type that is the same size as the key type, the KeyFunc functions expect a key type, so let's just pretend to be one! Only tested with TMap's FindByHash.   struct FHashHelper   {     static constexpr uint32 ByteRemainder = std::max(sizeof(uint32), sizeof(TKeyType)) - sizeof(uint32);      FHashHelper(const uint32&amp; Key) : Key(Key), RemainderBytes{}     {     };      uint32 Key;     uint8  RemainderBytes[ByteRemainder];      TKeyType GetComparable() const     {       // We are the key! (not)       return reinterpret_cast&lt;const TKeyType&amp;&gt;(*this);     }      using FTypeHashOnlyMap = TMap&lt;TKeyType, TValueType, TSetAllocator, TTypeHashOnlyKeyFunc&lt;                                     TKeyType, TValueType, bInAllowDuplicateKeys, TSetAllocator&gt;&gt;;       TValueType* FindByHash(TMap&lt;TKeyType, TValueType, TSetAllocator&gt;&amp; MapType) const     {       // let's pretend you have our KeyFunc handler instead!       return reinterpret_cast&lt;FTypeHashOnlyMap&amp;&gt;(MapType).FindByHash(Key, GetComparable());     }   };    static_assert(sizeof(FHashHelper) == sizeof(TKeyType), &quot;FHashKey must match the size of the key type!&quot;);     FORCEINLINE static bool Matches(TKeyType A, TKeyType B)   {     const uint32 KeyA = reinterpret_cast&lt;FHashHelper&amp;&gt;(A).Key;     const uint32 KeyB = reinterpret_cast&lt;FHashHelper&amp;&gt;(B).Key;      return KeyA == KeyB;   }     FORCEINLINE static typename TEnableIf&lt;sizeof(FHashHelper) == sizeof(TKeyType), TKeyType&gt;::Type GetSetKey(     typename TTypeHashOnlyKeyFunc::ElementInitType Element)   {     static_assert(sizeof(TKeyType) &gt;= 4, &quot;The key type has to be bigger than 4 bytes!&quot;);      FHashHelper KeyHack(TTypeHashOnlyKeyFunc::GetKeyHash(Element.Key));     return reinterpret_cast&lt;TKeyType&amp;&gt;(KeyHack);   } };    The Explanation  template&lt;typename KeyType, typename ValueType, typename SetAllocator /*= FDefaultSetAllocator*/, typename KeyFuncs /*= TDefaultMapHashableKeyFuncs&lt;KeyType,ValueType,false&gt;*/&gt; class TMap : public TSortableMapBase&lt;KeyType, ValueType, SetAllocator, KeyFuncs&gt; //                                                                                              ^                                                                                   // -------------------------------------------------------------------------&gt;                   | //                                                                                              right here!   Turns out Epic’s container types let you implement your own KeyFuncs handler(s)! By default TMap’s uses a TDefaultMapHashableKeyFuncs&lt;KeyType,ValueType,false&gt; KeyFunc, so what do the KeyFuncs handlers do?  They act as middlemen for the underlying hash map and set containers, offering static compile time functions that containers use to check for:    key equality using Matches(KeyLHS, KeyRHS)   key type hash function GetKeyHash(KeyType),   getting the key from a the key/value pair GetSetKey(Element/* A key value pair*/)   and so on. It is really nice being able to override the default container behavior through a template type argument. Which is especially useful if you want to have different hashing behavior per container without changing the underlying key type.  The Example  For example, if you have a regular old string and didn’t want to pay for a costly string hash function operation, you could implement a more performant hashing function directly into the container type without ever having to make a new string type. Pretty neat, huh?  The Underlying logic  With that out of the way, let me present you with a joke: A map container, a hash key and no one else walks into a bar…  Wait let me try that again:  What if you only had a set/map, a hash key you got from wherever and nothing else. You know that the underlying hash key represents a key inside of that map, unfortunately there’s no easy way of looking it up.  You see by default TSet/TMap needs the whole type to look up the correct value, as the hash key simply points to the underlying hash bucket and from then on out it is a O(n) search, which compares each element in the hash bucket chain1 through a equality operation, calling Matches in the KeyFuncs type. We can get around that limitation though, instead of just using the hash key for the hash bucket lookup, let’s use it for underlying equality check as well. Problem solved! Note: this method isn’t perfect, as you are the mercy of your hash function. If you can somehow manage a collision, the usual equality check will not save you. Although you potentially have 2^32 -1 possible hashes, so that’s alright.  Thanks for reading!                Chain, I don’t mean a closed address linked list bucket. The actual chain’s memory is still contiguous (Open addressing) (TSparseArray: the memory is contiguous, but the elements are not necessarily next to each other in memory). ↩">
+
+
+  <meta name="author" content="MarkJGx">
+  
+  <meta property="article:author" content="MarkJGx">
+  
+
+
+<meta property="og:type" content="article">
+<meta property="og:locale" content="en_US">
+<meta property="og:site_name" content="Mark J. G's programming blog">
+<meta property="og:title" content="Looking up values in a TMap/TSet with just the hash key.">
+<meta property="og:url" content="https://github.com/pages/MarkJGx/blog/hacking-tmap-and-tset/">
+
+
+  <meta property="og:description" content="How do you look up a value in a TMap/TSet without the underlying key type?  Let’s say you just have the hash key (uint32 that you can get from GetTypeHash) and nothing else. Do not fret!  The Resolution (Code)  I’ve crafted some helpers util’s to help you find a value inside of any TMap (easily translates to TSet). Here’s how you use TTypeHashOnlyKeyFunc:   // DO NOT USE the TTypeHashOnlyKeyFunc as a actual KeyFunc on your map/set, it is only worth using for anything lookup related. TMap&lt;FExampleKey, FExampleValue&gt; KeyValueMap;   uint32 HashKey = GetTypeHash(Key); TTypeHashOnlyKeyFunc&lt;FExampleKey, FExampleValue&gt;::FHashHelper Comparable(HashKey); FExampleValue* Value = Comparable.FindByHash(KeyValueMap);  if(Value) {   // Woohoo }     template &lt;typename TKeyType, typename TValueType, bool bInAllowDuplicateKeys = false, typename TSetAllocator = FDefaultSetAllocator&gt; struct TTypeHashOnlyKeyFunc : public TDefaultMapKeyFuncs&lt;TKeyType, TValueType, bInAllowDuplicateKeys&gt; {   // Type that is the same size as the key type, the KeyFunc functions expect a key type, so let's just pretend to be one! Only tested with TMap's FindByHash.   struct FHashHelper   {     static constexpr uint32 ByteRemainder = std::max(sizeof(uint32), sizeof(TKeyType)) - sizeof(uint32);      FHashHelper(const uint32&amp; Key) : Key(Key), RemainderBytes{}     {     };      uint32 Key;     uint8  RemainderBytes[ByteRemainder];      TKeyType GetComparable() const     {       // We are the key! (not)       return reinterpret_cast&lt;const TKeyType&amp;&gt;(*this);     }      using FTypeHashOnlyMap = TMap&lt;TKeyType, TValueType, TSetAllocator, TTypeHashOnlyKeyFunc&lt;                                     TKeyType, TValueType, bInAllowDuplicateKeys, TSetAllocator&gt;&gt;;       TValueType* FindByHash(TMap&lt;TKeyType, TValueType, TSetAllocator&gt;&amp; MapType) const     {       // let's pretend you have our KeyFunc handler instead!       return reinterpret_cast&lt;FTypeHashOnlyMap&amp;&gt;(MapType).FindByHash(Key, GetComparable());     }   };    static_assert(sizeof(FHashHelper) == sizeof(TKeyType), &quot;FHashKey must match the size of the key type!&quot;);     FORCEINLINE static bool Matches(TKeyType A, TKeyType B)   {     const uint32 KeyA = reinterpret_cast&lt;FHashHelper&amp;&gt;(A).Key;     const uint32 KeyB = reinterpret_cast&lt;FHashHelper&amp;&gt;(B).Key;      return KeyA == KeyB;   }     FORCEINLINE static typename TEnableIf&lt;sizeof(FHashHelper) == sizeof(TKeyType), TKeyType&gt;::Type GetSetKey(     typename TTypeHashOnlyKeyFunc::ElementInitType Element)   {     static_assert(sizeof(TKeyType) &gt;= 4, &quot;The key type has to be bigger than 4 bytes!&quot;);      FHashHelper KeyHack(TTypeHashOnlyKeyFunc::GetKeyHash(Element.Key));     return reinterpret_cast&lt;TKeyType&amp;&gt;(KeyHack);   } };    The Explanation  template&lt;typename KeyType, typename ValueType, typename SetAllocator /*= FDefaultSetAllocator*/, typename KeyFuncs /*= TDefaultMapHashableKeyFuncs&lt;KeyType,ValueType,false&gt;*/&gt; class TMap : public TSortableMapBase&lt;KeyType, ValueType, SetAllocator, KeyFuncs&gt; //                                                                                              ^                                                                                   // -------------------------------------------------------------------------&gt;                   | //                                                                                              right here!   Turns out Epic’s container types let you implement your own KeyFuncs handler(s)! By default TMap’s uses a TDefaultMapHashableKeyFuncs&lt;KeyType,ValueType,false&gt; KeyFunc, so what do the KeyFuncs handlers do?  They act as middlemen for the underlying hash map and set containers, offering static compile time functions that containers use to check for:    key equality using Matches(KeyLHS, KeyRHS)   key type hash function GetKeyHash(KeyType),   getting the key from a the key/value pair GetSetKey(Element/* A key value pair*/)   and so on. It is really nice being able to override the default container behavior through a template type argument. Which is especially useful if you want to have different hashing behavior per container without changing the underlying key type.  The Example  For example, if you have a regular old string and didn’t want to pay for a costly string hash function operation, you could implement a more performant hashing function directly into the container type without ever having to make a new string type. Pretty neat, huh?  The Underlying logic  With that out of the way, let me present you with a joke: A map container, a hash key and no one else walks into a bar…  Wait let me try that again:  What if you only had a set/map, a hash key you got from wherever and nothing else. You know that the underlying hash key represents a key inside of that map, unfortunately there’s no easy way of looking it up.  You see by default TSet/TMap needs the whole type to look up the correct value, as the hash key simply points to the underlying hash bucket and from then on out it is a O(n) search, which compares each element in the hash bucket chain1 through a equality operation, calling Matches in the KeyFuncs type. We can get around that limitation though, instead of just using the hash key for the hash bucket lookup, let’s use it for underlying equality check as well. Problem solved! Note: this method isn’t perfect, as you are the mercy of your hash function. If you can somehow manage a collision, the usual equality check will not save you. Although you potentially have 2^32 -1 possible hashes, so that’s alright.  Thanks for reading!                Chain, I don’t mean a closed address linked list bucket. The actual chain’s memory is still contiguous (Open addressing) (TSparseArray: the memory is contiguous, but the elements are not necessarily next to each other in memory). ↩">
+
+
+
+
+
+
+
+  <meta property="article:published_time" content="2022-02-18T00:00:00+02:00">
+
+
+
+
+
+
+<link rel="canonical" href="https://github.com/pages/MarkJGx/blog/hacking-tmap-and-tset/">
+
+
+
+
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    
+      "@type": "Person",
+      "name": null,
+      "url": "https://github.com/pages/MarkJGx/"
+    
+  }
+</script>
+
+
+
+
+
+
+
+<!-- end _includes/seo.html -->
+
+
+
+  <link href="/pages/MarkJGx/feed.xml" type="application/atom+xml" rel="alternate" title="Mark J. G's programming blog Feed">
+
+
+<!-- https://t.co/dKP3o1e -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script>
+  document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
+</script>
+
+<!-- For all browsers -->
+<link rel="stylesheet" href="/pages/MarkJGx/assets/css/main.css">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5/css/all.min.css"></noscript>
+
+
+
+    <!-- start custom head snippets -->
+
+<!-- insert favicons. use https://realfavicongenerator.net/ -->
+
+<!-- end custom head snippets -->
+
+  </head>
+
+  <body class="layout--single">
+    <nav class="skip-links">
+  <ul>
+    <li><a href="#site-nav" class="screen-reader-shortcut">Skip to primary navigation</a></li>
+    <li><a href="#main" class="screen-reader-shortcut">Skip to content</a></li>
+    <li><a href="#footer" class="screen-reader-shortcut">Skip to footer</a></li>
+  </ul>
+</nav>
+
+    
+
+<div class="masthead">
+  <div class="masthead__inner-wrap">
+    <div class="masthead__menu">
+      <nav id="site-nav" class="greedy-nav">
+        
+        <a class="site-title" href="/pages/MarkJGx/">
+          Mark J. G's programming blog
+          
+        </a>
+        <ul class="visible-links">
+<li class="masthead__menu-item">
+              <a href="/pages/MarkJGx/posts/">Posts</a>
+            </li>
+<li class="masthead__menu-item">
+              <a href="/pages/MarkJGx/categories/">Categories</a>
+            </li>
+<li class="masthead__menu-item">
+              <a href="/pages/MarkJGx/tags/">Tags</a>
+            </li>
+<li class="masthead__menu-item">
+              <a href="/pages/MarkJGx/about/">About</a>
+            </li>
+</ul>
+        
+        <button class="search__toggle" type="button">
+          <span class="visually-hidden">Toggle search</span>
+          <i class="fas fa-search"></i>
+        </button>
+        
+        <button class="greedy-nav__toggle hidden" type="button">
+          <span class="visually-hidden">Toggle menu</span>
+          <div class="navicon"></div>
+        </button>
+        <ul class="hidden-links hidden"></ul>
+      </nav>
+    </div>
+  </div>
+</div>
+
+
+    <div class="initial-content">
+      
+
+
+
+
+  
+    
+
+
+
+<nav class="breadcrumbs">
+  <ol itemscope itemtype="https://schema.org/BreadcrumbList">
+    
+    
+    
+      
+        <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+          <a href="/pages/MarkJGx/" itemprop="item"><span itemprop="name">Home</span></a>
+
+          <meta itemprop="position" content="1">
+        </li>
+        <span class="sep">/</span>
+      
+      
+        
+        <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+          <a href="/pages/MarkJGx/categories/blog" itemprop="item"><span itemprop="name">Blog</span></a>
+          <meta itemprop="position" content="2">
+        </li>
+        <span class="sep">/</span>
+      
+    
+      
+      
+        <li class="current">Looking up values in a TMap/TSet with just the hash key.</li>
+      
+    
+  </ol>
+</nav>
+
+  
+
+
+<div id="main" role="main">
+  
+
+
+  <article class="page h-entry" itemscope itemtype="https://schema.org/CreativeWork">
+    <meta itemprop="headline" content="Looking up values in a TMap/TSet with just the hash key.">
+    <meta itemprop="description" content="How do you look up a value in a TMap/TSet without the underlying key type?Let’s say you just have the hash key (uint32 that you can get from GetTypeHash) and nothing else. Do not fret!The Resolution (Code)I’ve crafted some helpers util’s to help you find a value inside of any TMap (easily translates to TSet). Here’s how you use TTypeHashOnlyKeyFunc:// DO NOT USE the TTypeHashOnlyKeyFunc as a actual KeyFunc on your map/set, it is only worth using for anything lookup related.TMap&lt;FExampleKey, FExampleValue&gt; KeyValueMap;uint32 HashKey = GetTypeHash(Key);TTypeHashOnlyKeyFunc&lt;FExampleKey, FExampleValue&gt;::FHashHelper Comparable(HashKey);FExampleValue* Value = Comparable.FindByHash(KeyValueMap);if(Value){  // Woohoo}template &lt;typename TKeyType, typename TValueType, bool bInAllowDuplicateKeys = false, typename TSetAllocator = FDefaultSetAllocator&gt;struct TTypeHashOnlyKeyFunc : public TDefaultMapKeyFuncs&lt;TKeyType, TValueType, bInAllowDuplicateKeys&gt;{  // Type that is the same size as the key type, the KeyFunc functions expect a key type, so let's just pretend to be one! Only tested with TMap's FindByHash.  struct FHashHelper  {    static constexpr uint32 ByteRemainder = std::max(sizeof(uint32), sizeof(TKeyType)) - sizeof(uint32);    FHashHelper(const uint32&amp; Key) : Key(Key), RemainderBytes{}    {    };    uint32 Key;    uint8  RemainderBytes[ByteRemainder];    TKeyType GetComparable() const    {      // We are the key! (not)      return reinterpret_cast&lt;const TKeyType&amp;&gt;(*this);    }    using FTypeHashOnlyMap = TMap&lt;TKeyType, TValueType, TSetAllocator, TTypeHashOnlyKeyFunc&lt;                                    TKeyType, TValueType, bInAllowDuplicateKeys, TSetAllocator&gt;&gt;;    TValueType* FindByHash(TMap&lt;TKeyType, TValueType, TSetAllocator&gt;&amp; MapType) const    {      // let's pretend you have our KeyFunc handler instead!      return reinterpret_cast&lt;FTypeHashOnlyMap&amp;&gt;(MapType).FindByHash(Key, GetComparable());    }  };  static_assert(sizeof(FHashHelper) == sizeof(TKeyType), &quot;FHashKey must match the size of the key type!&quot;);  FORCEINLINE static bool Matches(TKeyType A, TKeyType B)  {    const uint32 KeyA = reinterpret_cast&lt;FHashHelper&amp;&gt;(A).Key;    const uint32 KeyB = reinterpret_cast&lt;FHashHelper&amp;&gt;(B).Key;    return KeyA == KeyB;  }  FORCEINLINE static typename TEnableIf&lt;sizeof(FHashHelper) == sizeof(TKeyType), TKeyType&gt;::Type GetSetKey(    typename TTypeHashOnlyKeyFunc::ElementInitType Element)  {    static_assert(sizeof(TKeyType) &gt;= 4, &quot;The key type has to be bigger than 4 bytes!&quot;);    FHashHelper KeyHack(TTypeHashOnlyKeyFunc::GetKeyHash(Element.Key));    return reinterpret_cast&lt;TKeyType&amp;&gt;(KeyHack);  }};The Explanationtemplate&lt;typename KeyType, typename ValueType, typename SetAllocator /*= FDefaultSetAllocator*/, typename KeyFuncs /*= TDefaultMapHashableKeyFuncs&lt;KeyType,ValueType,false&gt;*/&gt;class TMap : public TSortableMapBase&lt;KeyType, ValueType, SetAllocator, KeyFuncs&gt;//                                                                                              ^                                                                                  // -------------------------------------------------------------------------&gt;                   |//                                                                                              right here!Turns out Epic’s container types let you implement your own KeyFuncs handler(s)! By default TMap’s uses a TDefaultMapHashableKeyFuncs&lt;KeyType,ValueType,false&gt; KeyFunc, so what do the KeyFuncs handlers do? They act as middlemen for the underlying hash map and set containers, offering static compile time functions that containers use to check for:  key equality using Matches(KeyLHS, KeyRHS)  key type hash function GetKeyHash(KeyType),  getting the key from a the key/value pair GetSetKey(Element/* A key value pair*/)and so on. It is really nice being able to override the default container behavior through a template type argument. Which is especially useful if you want to have different hashing behavior per container without changing the underlying key type.The ExampleFor example, if you have a regular old string and didn’t want to pay for a costly string hash function operation, you could implement a more performant hashing function directly into the container type without ever having to make a new string type. Pretty neat, huh?The Underlying logicWith that out of the way, let me present you with a joke: A map container, a hash key and no one else walks into a bar…Wait let me try that again: What if you only had a set/map, a hash key you got from wherever and nothing else. You know that the underlying hash key represents a key inside of that map, unfortunately there’s no easy way of looking it up.You see by default TSet/TMap needs the whole type to look up the correct value, as the hash key simply points to the underlying hash bucket and from then on out it is a O(n) search, which compares each element in the hash bucket chain1 through a equality operation, calling Matches in the KeyFuncs type. We can get around that limitation though, instead of just using the hash key for the hash bucket lookup, let’s use it for underlying equality check as well. Problem solved! Note: this method isn’t perfect, as you are the mercy of your hash function. If you can somehow manage a collision, the usual equality check will not save you. Although you potentially have 2^32 -1 possible hashes, so that’s alright.Thanks for reading!            Chain, I don’t mean a closed address linked list bucket. The actual chain’s memory is still contiguous (Open addressing) (TSparseArray: the memory is contiguous, but the elements are not necessarily next to each other in memory). ↩      ">
+    <meta itemprop="datePublished" content="2022-02-18T00:00:00+02:00">
+    
+
+    <div class="page__inner-wrap">
+      
+        <header>
+          <h1 id="page-title" class="page__title p-name" itemprop="headline">
+            <a href="https://github.com/pages/MarkJGx/blog/hacking-tmap-and-tset/" class="u-url" itemprop="url">Looking up values in a TMap/TSet with just the hash key.
+</a>
+          </h1>
+          
+
+  <p class="page__meta">
+    
+      
+      <span class="page__meta-date">
+        <i class="far fa-calendar-alt" aria-hidden="true"></i>
+        
+        <time datetime="2022-02-18T00:00:00+02:00">February 18, 2022</time>
+      </span>
+    
+
+    
+
+    
+  </p>
+
+
+        </header>
+      
+
+      <section class="page__content e-content" itemprop="text">
+        
+          <aside class="sidebar__right ">
+            <nav class="toc">
+              <header><h4 class="nav__title">
+<i class="fas fa-file-alt"></i> On this page</h4></header>
+              <ul class="toc__menu">
+<li><a href="#the-resolution-code">The Resolution (Code)</a></li>
+<li>
+<a href="#the-explanation">The Explanation</a><ul>
+<li><a href="#the-example">The Example</a></li>
+<li><a href="#the-underlying-logic">The Underlying logic</a></li>
+</ul>
+</li>
+</ul>
+
+            </nav>
+          </aside>
+        
+        <p><img src="/assets/images/hashlookupwithoutthewholekey.png" alt="The Goal"></p>
+
+<p>How do you look up a value in a TMap/TSet without the underlying key type?</p>
+
+<p>Let’s say you just have the hash key (<code class="language-plaintext highlighter-rouge">uint32</code> that you can get from <code class="language-plaintext highlighter-rouge">GetTypeHash</code>) and nothing else. Do not fret!</p>
+
+<h1 id="the-resolution-code">The Resolution (Code)</h1>
+
+<p>I’ve crafted some helpers util’s to help you find a value inside of any TMap (easily translates to TSet). Here’s how you use <code class="language-plaintext highlighter-rouge">TTypeHashOnlyKeyFunc</code>:</p>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="c1">// DO NOT USE the TTypeHashOnlyKeyFunc as a actual KeyFunc on your map/set, it is only worth using for anything lookup related.</span>
+<span class="n">TMap</span><span class="o">&lt;</span><span class="n">FExampleKey</span><span class="p">,</span> <span class="n">FExampleValue</span><span class="o">&gt;</span> <span class="n">KeyValueMap</span><span class="p">;</span>
+
+
+<span class="n">uint32</span> <span class="n">HashKey</span> <span class="o">=</span> <span class="n">GetTypeHash</span><span class="p">(</span><span class="n">Key</span><span class="p">);</span>
+<span class="n">TTypeHashOnlyKeyFunc</span><span class="o">&lt;</span><span class="n">FExampleKey</span><span class="p">,</span> <span class="n">FExampleValue</span><span class="o">&gt;::</span><span class="n">FHashHelper</span> <span class="nf">Comparable</span><span class="p">(</span><span class="n">HashKey</span><span class="p">);</span>
+<span class="n">FExampleValue</span><span class="o">*</span> <span class="n">Value</span> <span class="o">=</span> <span class="n">Comparable</span><span class="p">.</span><span class="n">FindByHash</span><span class="p">(</span><span class="n">KeyValueMap</span><span class="p">);</span>
+
+<span class="k">if</span><span class="p">(</span><span class="n">Value</span><span class="p">)</span>
+<span class="p">{</span>
+  <span class="c1">// Woohoo</span>
+<span class="p">}</span>
+
+</code></pre></div></div>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code>
+<span class="k">template</span> <span class="o">&lt;</span><span class="k">typename</span> <span class="nc">TKeyType</span><span class="p">,</span> <span class="k">typename</span> <span class="nc">TValueType</span><span class="p">,</span> <span class="kt">bool</span> <span class="n">bInAllowDuplicateKeys</span> <span class="o">=</span> <span class="nb">false</span><span class="p">,</span> <span class="k">typename</span> <span class="nc">TSetAllocator</span> <span class="o">=</span> <span class="n">FDefaultSetAllocator</span><span class="p">&gt;</span>
+<span class="k">struct</span> <span class="nc">TTypeHashOnlyKeyFunc</span> <span class="o">:</span> <span class="k">public</span> <span class="n">TDefaultMapKeyFuncs</span><span class="o">&lt;</span><span class="n">TKeyType</span><span class="p">,</span> <span class="n">TValueType</span><span class="p">,</span> <span class="n">bInAllowDuplicateKeys</span><span class="o">&gt;</span>
+<span class="p">{</span>
+  <span class="c1">// Type that is the same size as the key type, the KeyFunc functions expect a key type, so let's just pretend to be one! Only tested with TMap's FindByHash.</span>
+  <span class="k">struct</span> <span class="nc">FHashHelper</span>
+  <span class="p">{</span>
+    <span class="k">static</span> <span class="k">constexpr</span> <span class="n">uint32</span> <span class="n">ByteRemainder</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">max</span><span class="p">(</span><span class="k">sizeof</span><span class="p">(</span><span class="n">uint32</span><span class="p">),</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">TKeyType</span><span class="p">))</span> <span class="o">-</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">uint32</span><span class="p">);</span>
+
+    <span class="n">FHashHelper</span><span class="p">(</span><span class="k">const</span> <span class="n">uint32</span><span class="o">&amp;</span> <span class="n">Key</span><span class="p">)</span> <span class="o">:</span> <span class="n">Key</span><span class="p">(</span><span class="n">Key</span><span class="p">),</span> <span class="n">RemainderBytes</span><span class="p">{}</span>
+    <span class="p">{</span>
+    <span class="p">};</span>
+
+    <span class="n">uint32</span> <span class="n">Key</span><span class="p">;</span>
+    <span class="n">uint8</span>  <span class="n">RemainderBytes</span><span class="p">[</span><span class="n">ByteRemainder</span><span class="p">];</span>
+
+    <span class="n">TKeyType</span> <span class="n">GetComparable</span><span class="p">()</span> <span class="k">const</span>
+    <span class="p">{</span>
+      <span class="c1">// We are the key! (not)</span>
+      <span class="k">return</span> <span class="k">reinterpret_cast</span><span class="o">&lt;</span><span class="k">const</span> <span class="n">TKeyType</span><span class="o">&amp;&gt;</span><span class="p">(</span><span class="o">*</span><span class="k">this</span><span class="p">);</span>
+    <span class="p">}</span>
+
+    <span class="k">using</span> <span class="n">FTypeHashOnlyMap</span> <span class="o">=</span> <span class="n">TMap</span><span class="o">&lt;</span><span class="n">TKeyType</span><span class="p">,</span> <span class="n">TValueType</span><span class="p">,</span> <span class="n">TSetAllocator</span><span class="p">,</span> <span class="n">TTypeHashOnlyKeyFunc</span><span class="o">&lt;</span>
+                                    <span class="n">TKeyType</span><span class="p">,</span> <span class="n">TValueType</span><span class="p">,</span> <span class="n">bInAllowDuplicateKeys</span><span class="p">,</span> <span class="n">TSetAllocator</span><span class="o">&gt;&gt;</span><span class="p">;</span>
+
+
+    <span class="n">TValueType</span><span class="o">*</span> <span class="n">FindByHash</span><span class="p">(</span><span class="n">TMap</span><span class="o">&lt;</span><span class="n">TKeyType</span><span class="p">,</span> <span class="n">TValueType</span><span class="p">,</span> <span class="n">TSetAllocator</span><span class="o">&gt;&amp;</span> <span class="n">MapType</span><span class="p">)</span> <span class="k">const</span>
+    <span class="p">{</span>
+      <span class="c1">// let's pretend you have our KeyFunc handler instead!</span>
+      <span class="k">return</span> <span class="k">reinterpret_cast</span><span class="o">&lt;</span><span class="n">FTypeHashOnlyMap</span><span class="o">&amp;&gt;</span><span class="p">(</span><span class="n">MapType</span><span class="p">).</span><span class="n">FindByHash</span><span class="p">(</span><span class="n">Key</span><span class="p">,</span> <span class="n">GetComparable</span><span class="p">());</span>
+    <span class="p">}</span>
+  <span class="p">};</span>
+
+  <span class="k">static_assert</span><span class="p">(</span><span class="k">sizeof</span><span class="p">(</span><span class="n">FHashHelper</span><span class="p">)</span> <span class="o">==</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">TKeyType</span><span class="p">),</span> <span class="s">"FHashKey must match the size of the key type!"</span><span class="p">);</span>
+
+
+  <span class="n">FORCEINLINE</span> <span class="k">static</span> <span class="kt">bool</span> <span class="n">Matches</span><span class="p">(</span><span class="n">TKeyType</span> <span class="n">A</span><span class="p">,</span> <span class="n">TKeyType</span> <span class="n">B</span><span class="p">)</span>
+  <span class="p">{</span>
+    <span class="k">const</span> <span class="n">uint32</span> <span class="n">KeyA</span> <span class="o">=</span> <span class="k">reinterpret_cast</span><span class="o">&lt;</span><span class="n">FHashHelper</span><span class="o">&amp;&gt;</span><span class="p">(</span><span class="n">A</span><span class="p">).</span><span class="n">Key</span><span class="p">;</span>
+    <span class="k">const</span> <span class="n">uint32</span> <span class="n">KeyB</span> <span class="o">=</span> <span class="k">reinterpret_cast</span><span class="o">&lt;</span><span class="n">FHashHelper</span><span class="o">&amp;&gt;</span><span class="p">(</span><span class="n">B</span><span class="p">).</span><span class="n">Key</span><span class="p">;</span>
+
+    <span class="k">return</span> <span class="n">KeyA</span> <span class="o">==</span> <span class="n">KeyB</span><span class="p">;</span>
+  <span class="p">}</span>
+
+
+  <span class="n">FORCEINLINE</span> <span class="k">static</span> <span class="k">typename</span> <span class="n">TEnableIf</span><span class="o">&lt;</span><span class="k">sizeof</span><span class="p">(</span><span class="n">FHashHelper</span><span class="p">)</span> <span class="o">==</span> <span class="k">sizeof</span><span class="p">(</span><span class="n">TKeyType</span><span class="p">),</span> <span class="n">TKeyType</span><span class="o">&gt;::</span><span class="n">Type</span> <span class="n">GetSetKey</span><span class="p">(</span>
+    <span class="k">typename</span> <span class="n">TTypeHashOnlyKeyFunc</span><span class="o">::</span><span class="n">ElementInitType</span> <span class="n">Element</span><span class="p">)</span>
+  <span class="p">{</span>
+    <span class="k">static_assert</span><span class="p">(</span><span class="k">sizeof</span><span class="p">(</span><span class="n">TKeyType</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">4</span><span class="p">,</span> <span class="s">"The key type has to be bigger than 4 bytes!"</span><span class="p">);</span>
+
+    <span class="n">FHashHelper</span> <span class="n">KeyHack</span><span class="p">(</span><span class="n">TTypeHashOnlyKeyFunc</span><span class="o">::</span><span class="n">GetKeyHash</span><span class="p">(</span><span class="n">Element</span><span class="p">.</span><span class="n">Key</span><span class="p">));</span>
+    <span class="k">return</span> <span class="k">reinterpret_cast</span><span class="o">&lt;</span><span class="n">TKeyType</span><span class="o">&amp;&gt;</span><span class="p">(</span><span class="n">KeyHack</span><span class="p">);</span>
+  <span class="p">}</span>
+<span class="p">};</span>
+
+</code></pre></div></div>
+
+<h1 id="the-explanation">The Explanation</h1>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">template</span><span class="o">&lt;</span><span class="k">typename</span> <span class="nc">KeyType</span><span class="p">,</span> <span class="k">typename</span> <span class="nc">ValueType</span><span class="p">,</span> <span class="k">typename</span> <span class="nc">SetAllocator</span> <span class="cm">/*= FDefaultSetAllocator*/</span><span class="p">,</span> <span class="k">typename</span> <span class="nc">KeyFuncs</span> <span class="cm">/*= TDefaultMapHashableKeyFuncs&lt;KeyType,ValueType,false&gt;*/</span><span class="p">&gt;</span>
+<span class="k">class</span> <span class="nc">TMap</span> <span class="o">:</span> <span class="k">public</span> <span class="n">TSortableMapBase</span><span class="o">&lt;</span><span class="n">KeyType</span><span class="p">,</span> <span class="n">ValueType</span><span class="p">,</span> <span class="n">SetAllocator</span><span class="p">,</span> <span class="n">KeyFuncs</span><span class="o">&gt;</span>
+<span class="c1">//                                                                                              ^                                                                                  </span>
+<span class="c1">// -------------------------------------------------------------------------&gt;                   |</span>
+<span class="c1">//                                                                                              right here!</span>
+</code></pre></div></div>
+
+<p>Turns out Epic’s container types let you implement your own KeyFuncs handler(s)! By default TMap’s uses a <code class="language-plaintext highlighter-rouge">TDefaultMapHashableKeyFuncs&lt;KeyType,ValueType,false&gt;</code> KeyFunc, so what do the KeyFuncs handlers do? 
+They act as middlemen for the underlying hash map and set containers, offering static compile time functions that containers use to check for:</p>
+<ul>
+  <li>key equality using <code class="language-plaintext highlighter-rouge">Matches(KeyLHS, KeyRHS)</code>
+</li>
+  <li>key type hash function <code class="language-plaintext highlighter-rouge">GetKeyHash(KeyType)</code>,</li>
+  <li>getting the key from a the key/value pair <code class="language-plaintext highlighter-rouge">GetSetKey(Element/* A key value pair*/)</code>
+</li>
+</ul>
+
+<p>and so on. It is really nice being able to override the default container behavior through a template type argument. Which is especially useful if you want to have different hashing behavior per container without changing the underlying key type.</p>
+
+<h2 id="the-example">The Example</h2>
+
+<p>For example, if you have a regular old string and didn’t want to pay for a costly string hash function operation, you could implement a more performant hashing function directly into the container type without ever having to make a new string type. Pretty neat, huh?</p>
+
+<h2 id="the-underlying-logic">The Underlying logic</h2>
+
+<p>With that out of the way, let me present you with a joke: A map container, a hash key and no one else walks into a bar…</p>
+
+<p>Wait let me try that again: 
+What if you only had a set/map, a hash key you got from wherever and nothing else. You know that the underlying hash key represents a key inside of that map, unfortunately there’s no easy way of looking it up.</p>
+
+<p>You see by default TSet/TMap needs the whole type to look up the correct value, as the hash key simply points to the underlying hash bucket and from then on out it is a O(n) search, which compares each element in the hash bucket chain<sup id="fnref:1" role="doc-noteref"><a href="#fn:1" class="footnote" rel="footnote">1</a></sup> through a equality operation, calling <code class="language-plaintext highlighter-rouge">Matches</code> in the KeyFuncs type. We can get around that limitation though, instead of just using the hash key for the hash bucket lookup, let’s use it for underlying equality check as well. Problem solved! Note: this method isn’t perfect, as you are the mercy of your hash function. If you can somehow manage a collision, the usual equality check will not save you. Although you potentially have 2^32 -1 possible hashes, so that’s alright.</p>
+
+<p>Thanks for reading!</p>
+<div class="footnotes" role="doc-endnotes">
+  <ol>
+    <li id="fn:1" role="doc-endnote">
+      <p>Chain, I don’t mean a closed address linked list bucket. The actual chain’s memory is still contiguous (Open addressing) (TSparseArray: the memory is contiguous, but the elements are not necessarily next to each other in memory). <a href="#fnref:1" class="reversefootnote" role="doc-backlink">↩</a></p>
+    </li>
+  </ol>
+</div>
+
+        
+      </section>
+
+      <footer class="page__meta">
+        
+        
+  
+
+
+  
+
+  <p class="page__taxonomy">
+    <strong><i class="fas fa-fw fa-tags" aria-hidden="true"></i> Tags: </strong>
+    <span itemprop="keywords">
+    
+      <a href="/pages/MarkJGx/tags/tricks" class="page__taxonomy-item p-category" rel="tag">tricks</a><span class="sep">, </span>
+    
+      <a href="/pages/MarkJGx/tags/unreal" class="page__taxonomy-item p-category" rel="tag">unreal</a>
+    
+    </span>
+  </p>
+
+
+
+
+  
+
+
+  
+
+  <p class="page__taxonomy">
+    <strong><i class="fas fa-fw fa-folder-open" aria-hidden="true"></i> Categories: </strong>
+    <span itemprop="keywords">
+    
+      <a href="/pages/MarkJGx/categories/blog" class="page__taxonomy-item p-category" rel="tag">Blog</a>
+    
+    </span>
+  </p>
+
+
+        
+
+  <p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time class="dt-published" datetime="2022-02-18T00:00:00+02:00">February 18, 2022</time></p>
+
+      </footer>
+
+      
+
+      
+  <nav class="pagination">
+    
+      <a href="/pages/MarkJGx/blog/debugging-uht/" class="pagination--pager" title="Debugging the Unreal Header Tool (UHT)
+">Previous</a>
+    
+    
+      <a href="/pages/MarkJGx/blog/porting-custom-shading-models-to-ue5/" class="pagination--pager" title="Porting custom UE4 shading models to UE5 (or how to tackle the new GBuffer codegen)
+">Next</a>
+    
+  </nav>
+
+    </div>
+
+    
+      <div class="page__comments">
+  
+  
+      <h4 class="page__comments-title">Comments</h4>
+      <section id="utterances-comments"></section>
+    
+</div>
+
+    
+  </article>
+
+  
+  
+</div>
+
+    </div>
+
+    
+      <div class="search-content">
+        <div class="search-content__inner-wrap">
+<form class="search-content__form" onkeydown="return event.key != 'Enter';" role="search">
+    <label class="sr-only" for="search">
+      Enter your search term...
+    </label>
+    <input type="search" id="search" class="search-input" tabindex="-1" placeholder="Enter your search term...">
+  </form>
+  <div id="results" class="results"></div>
+</div>
+
+      </div>
+    
+
+    <div id="footer" class="page__footer">
+      <footer>
+        <!-- start custom footer snippets -->
+
+<!-- end custom footer snippets -->
+        <div class="page__footer-follow">
+  <ul class="social-icons">
+    
+
+    
+      
+        
+          <li><a href="https://twitter.com/MarkJGx" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-twitter-square" aria-hidden="true"></i> Twitter</a></li>
+        
+      
+        
+          <li><a href="https://github.com/MarkJGx" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-github" aria-hidden="true"></i> GitHub</a></li>
+        
+      
+    
+
+    
+      <li><a href="/pages/MarkJGx/feed.xml"><i class="fas fa-fw fa-rss-square" aria-hidden="true"></i> Feed</a></li>
+    
+  </ul>
+</div>
+
+<div class="page__footer-copyright">© 2022 Mark J. G's programming blog. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.</div>
+
+      </footer>
+    </div>
+
+    
+  <script src="/pages/MarkJGx/assets/js/main.min.js"></script>
+
+
+
+
+<script src="/pages/MarkJGx/assets/js/lunr/lunr.min.js"></script>
+<script src="/pages/MarkJGx/assets/js/lunr/lunr-store.js"></script>
+<script src="/pages/MarkJGx/assets/js/lunr/lunr-en.js"></script>
+
+
+
+
+    <script>
+  'use strict';
+
+  (function() {
+    var commentContainer = document.querySelector('#utterances-comments');
+
+    if (!commentContainer) {
+      return;
+    }
+
+    var script = document.createElement('script');
+    script.setAttribute('src', 'https://utteranc.es/client.js');
+    script.setAttribute('repo', 'MarkJGx/markjgx.github.io');
+    script.setAttribute('issue-term', 'pathname');
+    
+    script.setAttribute('theme', 'github-light');
+    script.setAttribute('crossorigin', 'anonymous');
+
+    commentContainer.appendChild(script);
+  })();
+</script>
+
+  
+
+
+
+
+
+  </body>
+</html>

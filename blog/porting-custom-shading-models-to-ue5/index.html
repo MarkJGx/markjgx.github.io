@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<!--
+  Minimal Mistakes Jekyll Theme 4.24.0 by Michael Rose
+  Copyright 2013-2020 Michael Rose - mademistakes.com | @mmistakes
+  Free for personal and commercial use under the MIT license
+  https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
+--><html lang="en" class="no-js">
+  <head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+
+<!-- begin _includes/seo.html --><title>Porting custom UE4 shading models to UE5 (or how to tackle the new GBuffer codegen) - Mark J. G’s programming blog</title>
+<meta name="description" content="The Preface This is NOT a tutorial on how to add custom shading models in general, only a quick UE4 to UE5 transition helper.">
+
+
+  <meta name="author" content="MarkJGx">
+  
+  <meta property="article:author" content="MarkJGx">
+  
+
+
+<meta property="og:type" content="article">
+<meta property="og:locale" content="en_US">
+<meta property="og:site_name" content="Mark J. G's programming blog">
+<meta property="og:title" content="Porting custom UE4 shading models to UE5 (or how to tackle the new GBuffer codegen)">
+<meta property="og:url" content="https://github.com/pages/MarkJGx/blog/porting-custom-shading-models-to-ue5/">
+
+
+  <meta property="og:description" content="The Preface This is NOT a tutorial on how to add custom shading models in general, only a quick UE4 to UE5 transition helper.">
+
+
+
+
+
+
+
+  <meta property="article:published_time" content="2022-04-18T00:00:00+03:00">
+
+
+
+
+
+
+<link rel="canonical" href="https://github.com/pages/MarkJGx/blog/porting-custom-shading-models-to-ue5/">
+
+
+
+
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    
+      "@type": "Person",
+      "name": null,
+      "url": "https://github.com/pages/MarkJGx/"
+    
+  }
+</script>
+
+
+
+
+
+
+
+<!-- end _includes/seo.html -->
+
+
+
+  <link href="/pages/MarkJGx/feed.xml" type="application/atom+xml" rel="alternate" title="Mark J. G's programming blog Feed">
+
+
+<!-- https://t.co/dKP3o1e -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script>
+  document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
+</script>
+
+<!-- For all browsers -->
+<link rel="stylesheet" href="/pages/MarkJGx/assets/css/main.css">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5/css/all.min.css"></noscript>
+
+
+
+    <!-- start custom head snippets -->
+
+<!-- insert favicons. use https://realfavicongenerator.net/ -->
+
+<!-- end custom head snippets -->
+
+  </head>
+
+  <body class="layout--single">
+    <nav class="skip-links">
+  <ul>
+    <li><a href="#site-nav" class="screen-reader-shortcut">Skip to primary navigation</a></li>
+    <li><a href="#main" class="screen-reader-shortcut">Skip to content</a></li>
+    <li><a href="#footer" class="screen-reader-shortcut">Skip to footer</a></li>
+  </ul>
+</nav>
+
+    
+
+<div class="masthead">
+  <div class="masthead__inner-wrap">
+    <div class="masthead__menu">
+      <nav id="site-nav" class="greedy-nav">
+        
+        <a class="site-title" href="/pages/MarkJGx/">
+          Mark J. G's programming blog
+          
+        </a>
+        <ul class="visible-links">
+<li class="masthead__menu-item">
+              <a href="/pages/MarkJGx/posts/">Posts</a>
+            </li>
+<li class="masthead__menu-item">
+              <a href="/pages/MarkJGx/categories/">Categories</a>
+            </li>
+<li class="masthead__menu-item">
+              <a href="/pages/MarkJGx/tags/">Tags</a>
+            </li>
+<li class="masthead__menu-item">
+              <a href="/pages/MarkJGx/about/">About</a>
+            </li>
+</ul>
+        
+        <button class="search__toggle" type="button">
+          <span class="visually-hidden">Toggle search</span>
+          <i class="fas fa-search"></i>
+        </button>
+        
+        <button class="greedy-nav__toggle hidden" type="button">
+          <span class="visually-hidden">Toggle menu</span>
+          <div class="navicon"></div>
+        </button>
+        <ul class="hidden-links hidden"></ul>
+      </nav>
+    </div>
+  </div>
+</div>
+
+
+    <div class="initial-content">
+      
+
+
+
+
+  
+    
+
+
+
+<nav class="breadcrumbs">
+  <ol itemscope itemtype="https://schema.org/BreadcrumbList">
+    
+    
+    
+      
+        <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+          <a href="/pages/MarkJGx/" itemprop="item"><span itemprop="name">Home</span></a>
+
+          <meta itemprop="position" content="1">
+        </li>
+        <span class="sep">/</span>
+      
+      
+        
+        <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+          <a href="/pages/MarkJGx/categories/blog" itemprop="item"><span itemprop="name">Blog</span></a>
+          <meta itemprop="position" content="2">
+        </li>
+        <span class="sep">/</span>
+      
+    
+      
+      
+        <li class="current">Porting custom UE4 shading models to UE5 (or how to tackle the new GBuffer codegen)</li>
+      
+    
+  </ol>
+</nav>
+
+  
+
+
+<div id="main" role="main">
+  
+
+
+  <article class="page h-entry" itemscope itemtype="https://schema.org/CreativeWork">
+    <meta itemprop="headline" content="Porting custom UE4 shading models to UE5 (or how to tackle the new GBuffer codegen)">
+    <meta itemprop="description" content="The PrefaceThis is NOT a tutorial on how to add custom shading models in general, only a quick UE4 to UE5 transition helper.">
+    <meta itemprop="datePublished" content="2022-04-18T00:00:00+03:00">
+    
+
+    <div class="page__inner-wrap">
+      
+        <header>
+          <h1 id="page-title" class="page__title p-name" itemprop="headline">
+            <a href="https://github.com/pages/MarkJGx/blog/porting-custom-shading-models-to-ue5/" class="u-url" itemprop="url">Porting custom UE4 shading models to UE5 (or how to tackle the new GBuffer codegen)
+</a>
+          </h1>
+          
+
+  <p class="page__meta">
+    
+      
+      <span class="page__meta-date">
+        <i class="far fa-calendar-alt" aria-hidden="true"></i>
+        
+        <time datetime="2022-04-18T00:00:00+03:00">April 18, 2022</time>
+      </span>
+    
+
+    
+
+    
+  </p>
+
+
+        </header>
+      
+
+      <section class="page__content e-content" itemprop="text">
+        
+          <aside class="sidebar__right ">
+            <nav class="toc">
+              <header><h4 class="nav__title">
+<i class="fas fa-file-alt"></i> On this page</h4></header>
+              <ul class="toc__menu">
+<li><a href="#the-preface">The Preface</a></li>
+<li><a href="#the-why">The Why?</a></li>
+<li><a href="#the-resolution-code">The Resolution (Code)</a></li>
+<li><a href="#the-result">The Result</a></li>
+</ul>
+
+            </nav>
+          </aside>
+        
+        <p><img src="/assets/images/beforeport.png" alt="Oh no! My custom shading model isn't working anymore!"></p>
+<h1 id="the-preface">The Preface</h1>
+<p>This is NOT a tutorial on how to add custom shading models in general, only a quick UE4 to UE5 transition helper.</p>
+
+<h1 id="the-why">The Why?</h1>
+
+<p><strong>Unreal Engine 5</strong> creates GBuffer encoding/decoding functions through code generation (<code class="language-plaintext highlighter-rouge">ShaderCompiler.h</code>/<code class="language-plaintext highlighter-rouge">ShaderGenerationUtil.cpp</code>) instead of hard coding (UE4) said functions. If you managed to port your custom shading model so far and get what you see above, then this blog is for you. Your custom shading model has be introduced into the new GBuffer code generation path.</p>
+
+<h1 id="the-resolution-code">The Resolution (Code)</h1>
+
+<p>Start out by adding your custom shading model to the a struct called <code class="language-plaintext highlighter-rouge">FShaderMaterialPropertyDefines</code> in <code class="language-plaintext highlighter-rouge">ShaderMaterial.h</code> (in the RenderCore module)</p>
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// struct FShaderMaterialPropertyDefines</span>
+  <span class="n">uint8</span> <span class="n">MATERIAL_SHADINGMODEL_SINGLELAYERWATER</span> <span class="o">:</span> <span class="mi">1</span><span class="p">;</span>
+  <span class="n">uint8</span> <span class="n">MATERIAL_SHADINGMODEL_THIN_TRANSLUCENT</span> <span class="o">:</span> <span class="mi">1</span><span class="p">;</span>
+
+  <span class="c1">// Custom shading model</span>
+  <span class="n">uint8</span> <span class="n">MATERIAL_SHADINGMODEL_CUSTOM_SHADING_MODEL</span> <span class="o">:</span> <span class="mi">1</span><span class="p">;</span>
+</code></pre></div></div>
+<p>What you’re doing is adding a flag to the material property defines struct, indicating whether that shading model is currently active or not.</p>
+
+<p>Next up, navigate to <code class="language-plaintext highlighter-rouge">FShaderCompileUtilities::ApplyFetchEnvironment</code> in <code class="language-plaintext highlighter-rouge">ShaderGenerationUtil.cpp</code> and the new custom shading model flag to the function.</p>
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// FShaderCompileUtilities::ApplyFetchEnvironment(FShaderMaterialPropertyDefines&amp; SrcDefines, FShaderCompilerEnvironment&amp; OutEnvironment)</span>
+  <span class="n">FETCH_COMPILE_BOOL</span><span class="p">(</span><span class="n">MATERIAL_SHADINGMODEL_THIN_TRANSLUCENT</span><span class="p">);</span>
+
+    <span class="c1">// Custom shading model</span>
+  <span class="n">FETCH_COMPILE_BOOL</span><span class="p">(</span><span class="n">MATERIAL_SHADINGMODEL_CUSTOM_SHADING_MODEL</span><span class="p">);</span>
+
+</code></pre></div></div>
+
+<p><code class="language-plaintext highlighter-rouge">FETCH_COMPILE_BOOL()</code> is a macro that checks if the shading model flag is present in the current compilation environment, if so the shading model flag will be set in the defines struct.</p>
+
+<p>Make sure to match the flag with the the underlying custom shading model pre-processor defines you added before, the macro will turn that flag into a string literal and check the compilation environment against said string.</p>
+
+<blockquote>
+  <p>The underlying flag is added to the environment by <code class="language-plaintext highlighter-rouge">GetMaterialEnvironment</code> in <code class="language-plaintext highlighter-rouge">MaterialHLSLEmitter.cpp</code>. Fortunately, we don’t have to worry about that, as that’s already done by past you.</p>
+</blockquote>
+
+<p>Last but not least, we have to mark our custom shading model as relevant to the GBuffer (and in doing so the GBuffer encoding/decoding codegen).</p>
+
+<p><code class="language-plaintext highlighter-rouge">ShaderGenerationUtil.cpp</code></p>
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  <span class="c1">// DetermineUsedMaterialSlots (global scope function)</span>
+
+  <span class="k">if</span> <span class="p">(</span><span class="n">Mat</span><span class="p">.</span><span class="n">MATERIAL_SHADINGMODEL_CUSTOM_SHADING_MODEL</span><span class="p">)</span>
+  <span class="p">{</span>
+    <span class="n">SetStandardGBufferSlots</span><span class="p">(</span><span class="n">Slots</span><span class="p">,</span> <span class="n">bWriteEmissive</span><span class="p">,</span> <span class="n">bHasTangent</span><span class="p">,</span> <span class="n">bHasVelocity</span><span class="p">,</span> <span class="n">bHasStaticLighting</span><span class="p">,</span> <span class="n">bIsStrataMaterial</span><span class="p">);</span>
+    <span class="c1">// Uncomment if your shading model has custom data.</span>
+    <span class="c1">// Slots[GBS_CustomData] = bUseCustomData; </span>
+  <span class="p">}</span>
+</code></pre></div></div>
+
+<p>That’s it, UE5 is aware of your custom shading model and will include it as a valid material slot in the GBuffer codegen. Thanks for reading.</p>
+
+<h1 id="the-result">The Result</h1>
+
+<p><img src="/assets/images/workingshadingmodel.png" alt="There we go, custom shading models in UE5"></p>
+
+        
+      </section>
+
+      <footer class="page__meta">
+        
+        
+  
+
+
+  
+
+  <p class="page__taxonomy">
+    <strong><i class="fas fa-fw fa-tags" aria-hidden="true"></i> Tags: </strong>
+    <span itemprop="keywords">
+    
+      <a href="/pages/MarkJGx/tags/tricks" class="page__taxonomy-item p-category" rel="tag">tricks</a><span class="sep">, </span>
+    
+      <a href="/pages/MarkJGx/tags/ue5" class="page__taxonomy-item p-category" rel="tag">ue5</a><span class="sep">, </span>
+    
+      <a href="/pages/MarkJGx/tags/unreal" class="page__taxonomy-item p-category" rel="tag">unreal</a>
+    
+    </span>
+  </p>
+
+
+
+
+  
+
+
+  
+
+  <p class="page__taxonomy">
+    <strong><i class="fas fa-fw fa-folder-open" aria-hidden="true"></i> Categories: </strong>
+    <span itemprop="keywords">
+    
+      <a href="/pages/MarkJGx/categories/blog" class="page__taxonomy-item p-category" rel="tag">Blog</a>
+    
+    </span>
+  </p>
+
+
+        
+
+  <p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time class="dt-published" datetime="2022-04-18T00:00:00+03:00">April 18, 2022</time></p>
+
+      </footer>
+
+      
+
+      
+  <nav class="pagination">
+    
+      <a href="/pages/MarkJGx/blog/hacking-tmap-and-tset/" class="pagination--pager" title="Looking up values in a TMap/TSet with just the hash key.
+">Previous</a>
+    
+    
+      <a href="/pages/MarkJGx/blog/physx-in-ue5/" class="pagination--pager" title="PhysX/APEX in Unreal Engine 5
+">Next</a>
+    
+  </nav>
+
+    </div>
+
+    
+      <div class="page__comments">
+  
+  
+      <h4 class="page__comments-title">Comments</h4>
+      <section id="utterances-comments"></section>
+    
+</div>
+
+    
+  </article>
+
+  
+  
+</div>
+
+    </div>
+
+    
+      <div class="search-content">
+        <div class="search-content__inner-wrap">
+<form class="search-content__form" onkeydown="return event.key != 'Enter';" role="search">
+    <label class="sr-only" for="search">
+      Enter your search term...
+    </label>
+    <input type="search" id="search" class="search-input" tabindex="-1" placeholder="Enter your search term...">
+  </form>
+  <div id="results" class="results"></div>
+</div>
+
+      </div>
+    
+
+    <div id="footer" class="page__footer">
+      <footer>
+        <!-- start custom footer snippets -->
+
+<!-- end custom footer snippets -->
+        <div class="page__footer-follow">
+  <ul class="social-icons">
+    
+
+    
+      
+        
+          <li><a href="https://twitter.com/MarkJGx" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-twitter-square" aria-hidden="true"></i> Twitter</a></li>
+        
+      
+        
+          <li><a href="https://github.com/MarkJGx" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-github" aria-hidden="true"></i> GitHub</a></li>
+        
+      
+    
+
+    
+      <li><a href="/pages/MarkJGx/feed.xml"><i class="fas fa-fw fa-rss-square" aria-hidden="true"></i> Feed</a></li>
+    
+  </ul>
+</div>
+
+<div class="page__footer-copyright">© 2022 Mark J. G's programming blog. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.</div>
+
+      </footer>
+    </div>
+
+    
+  <script src="/pages/MarkJGx/assets/js/main.min.js"></script>
+
+
+
+
+<script src="/pages/MarkJGx/assets/js/lunr/lunr.min.js"></script>
+<script src="/pages/MarkJGx/assets/js/lunr/lunr-store.js"></script>
+<script src="/pages/MarkJGx/assets/js/lunr/lunr-en.js"></script>
+
+
+
+
+    <script>
+  'use strict';
+
+  (function() {
+    var commentContainer = document.querySelector('#utterances-comments');
+
+    if (!commentContainer) {
+      return;
+    }
+
+    var script = document.createElement('script');
+    script.setAttribute('src', 'https://utteranc.es/client.js');
+    script.setAttribute('repo', 'MarkJGx/markjgx.github.io');
+    script.setAttribute('issue-term', 'pathname');
+    
+    script.setAttribute('theme', 'github-light');
+    script.setAttribute('crossorigin', 'anonymous');
+
+    commentContainer.appendChild(script);
+  })();
+</script>
+
+  
+
+
+
+
+
+  </body>
+</html>

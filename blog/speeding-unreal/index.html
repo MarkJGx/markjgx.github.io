@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<!--
+  Minimal Mistakes Jekyll Theme 4.24.0 by Michael Rose
+  Copyright 2013-2020 Michael Rose - mademistakes.com | @mmistakes
+  Free for personal and commercial use under the MIT license
+  https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
+--><html lang="en" class="no-js">
+  <head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+
+<!-- begin _includes/seo.html --><title>Speeding up Unreal Engine (Engine) development by caching your binary dependencies - Mark J. G’s programming blog</title>
+<meta name="description" content="You can significantly speed up your Unreal Engine, engine not project, workflow by opting to locally cache Unreal’s binary dependencies in a local directory. This is especially useful if you are constantly switching between engine versions, or want to have several local repos checked out.">
+
+
+  <meta name="author" content="MarkJGx">
+  
+  <meta property="article:author" content="MarkJGx">
+  
+
+
+<meta property="og:type" content="article">
+<meta property="og:locale" content="en_US">
+<meta property="og:site_name" content="Mark J. G's programming blog">
+<meta property="og:title" content="Speeding up Unreal Engine (Engine) development by caching your binary dependencies">
+<meta property="og:url" content="https://github.com/pages/MarkJGx/blog/speeding-unreal/">
+
+
+  <meta property="og:description" content="You can significantly speed up your Unreal Engine, engine not project, workflow by opting to locally cache Unreal’s binary dependencies in a local directory. This is especially useful if you are constantly switching between engine versions, or want to have several local repos checked out.">
+
+
+
+
+
+
+
+  <meta property="article:published_time" content="2022-01-09T00:00:00+02:00">
+
+
+
+
+
+
+<link rel="canonical" href="https://github.com/pages/MarkJGx/blog/speeding-unreal/">
+
+
+
+
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    
+      "@type": "Person",
+      "name": null,
+      "url": "https://github.com/pages/MarkJGx/"
+    
+  }
+</script>
+
+
+
+
+
+
+
+<!-- end _includes/seo.html -->
+
+
+
+  <link href="/pages/MarkJGx/feed.xml" type="application/atom+xml" rel="alternate" title="Mark J. G's programming blog Feed">
+
+
+<!-- https://t.co/dKP3o1e -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script>
+  document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
+</script>
+
+<!-- For all browsers -->
+<link rel="stylesheet" href="/pages/MarkJGx/assets/css/main.css">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5/css/all.min.css"></noscript>
+
+
+
+    <!-- start custom head snippets -->
+
+<!-- insert favicons. use https://realfavicongenerator.net/ -->
+
+<!-- end custom head snippets -->
+
+  </head>
+
+  <body class="layout--single">
+    <nav class="skip-links">
+  <ul>
+    <li><a href="#site-nav" class="screen-reader-shortcut">Skip to primary navigation</a></li>
+    <li><a href="#main" class="screen-reader-shortcut">Skip to content</a></li>
+    <li><a href="#footer" class="screen-reader-shortcut">Skip to footer</a></li>
+  </ul>
+</nav>
+
+    
+
+<div class="masthead">
+  <div class="masthead__inner-wrap">
+    <div class="masthead__menu">
+      <nav id="site-nav" class="greedy-nav">
+        
+        <a class="site-title" href="/pages/MarkJGx/">
+          Mark J. G's programming blog
+          
+        </a>
+        <ul class="visible-links">
+<li class="masthead__menu-item">
+              <a href="/pages/MarkJGx/posts/">Posts</a>
+            </li>
+<li class="masthead__menu-item">
+              <a href="/pages/MarkJGx/categories/">Categories</a>
+            </li>
+<li class="masthead__menu-item">
+              <a href="/pages/MarkJGx/tags/">Tags</a>
+            </li>
+<li class="masthead__menu-item">
+              <a href="/pages/MarkJGx/about/">About</a>
+            </li>
+</ul>
+        
+        <button class="search__toggle" type="button">
+          <span class="visually-hidden">Toggle search</span>
+          <i class="fas fa-search"></i>
+        </button>
+        
+        <button class="greedy-nav__toggle hidden" type="button">
+          <span class="visually-hidden">Toggle menu</span>
+          <div class="navicon"></div>
+        </button>
+        <ul class="hidden-links hidden"></ul>
+      </nav>
+    </div>
+  </div>
+</div>
+
+
+    <div class="initial-content">
+      
+
+
+
+
+  
+    
+
+
+
+<nav class="breadcrumbs">
+  <ol itemscope itemtype="https://schema.org/BreadcrumbList">
+    
+    
+    
+      
+        <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+          <a href="/pages/MarkJGx/" itemprop="item"><span itemprop="name">Home</span></a>
+
+          <meta itemprop="position" content="1">
+        </li>
+        <span class="sep">/</span>
+      
+      
+        
+        <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+          <a href="/pages/MarkJGx/categories/blog" itemprop="item"><span itemprop="name">Blog</span></a>
+          <meta itemprop="position" content="2">
+        </li>
+        <span class="sep">/</span>
+      
+    
+      
+      
+        <li class="current">Speeding up Unreal Engine (Engine) development by caching your binary dependencies</li>
+      
+    
+  </ol>
+</nav>
+
+  
+
+
+<div id="main" role="main">
+  
+
+
+  <article class="page h-entry" itemscope itemtype="https://schema.org/CreativeWork">
+    <meta itemprop="headline" content="Speeding up Unreal Engine (Engine) development by caching your binary dependencies">
+    <meta itemprop="description" content="You can significantly speed up your Unreal Engine, engine not project, workflow by opting to locally cache Unreal’s binary dependencies in a local directory. This is especially useful if you are constantly switching between engine versions, or want to have several local repos checked out.">
+    <meta itemprop="datePublished" content="2022-01-09T00:00:00+02:00">
+    
+
+    <div class="page__inner-wrap">
+      
+        <header>
+          <h1 id="page-title" class="page__title p-name" itemprop="headline">
+            <a href="https://github.com/pages/MarkJGx/blog/speeding-unreal/" class="u-url" itemprop="url">Speeding up Unreal Engine (Engine) development by caching your binary dependencies
+</a>
+          </h1>
+          
+
+  <p class="page__meta">
+    
+      
+      <span class="page__meta-date">
+        <i class="far fa-calendar-alt" aria-hidden="true"></i>
+        
+        <time datetime="2022-01-09T00:00:00+02:00">January 9, 2022</time>
+      </span>
+    
+
+    
+
+    
+  </p>
+
+
+        </header>
+      
+
+      <section class="page__content e-content" itemprop="text">
+        
+          <aside class="sidebar__right ">
+            <nav class="toc">
+              <header><h4 class="nav__title">
+<i class="fas fa-file-alt"></i> On this page</h4></header>
+              
+
+            </nav>
+          </aside>
+        
+        <p>You can significantly speed up your Unreal Engine, <strong>engine</strong> not project, workflow by opting to locally cache Unreal’s binary dependencies in a local directory. This is especially useful if you are constantly switching between engine versions, or want to have several local repos checked out.</p>
+
+<p>Add a new global environment variable with the following name and value:</p>
+
+<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">UE4_GITDEPS_ARGS</span><span class="o">=</span><span class="nt">--cache</span><span class="o">=</span><span class="n">C:\Users\markjg\clones\GitDepsCache</span><span class="w"> </span><span class="nt">--cache-days</span><span class="o">=</span><span class="mi">180</span><span class="w"> </span><span class="nt">--cache-size-multiplier</span><span class="o">=</span><span class="mi">5</span><span class="w">
+</span></code></pre></div></div>
+
+<p>The important line here is the <code class="language-plaintext highlighter-rouge">--cache=YourLocalCacheDirectoryPathHere</code>, that’s where your local cache will live. This directory can rapidly grow in size, at the time of writing my cache directory takes up around 26GB’s. You’re done!</p>
+
+<p>How does this work? Every time you run the engine’s <code class="language-plaintext highlighter-rouge">./Setup</code> executable, that’ll will invoke the <code class="language-plaintext highlighter-rouge">GitDependency</code> tool. Which checks for any invalid (outdated, non-existent) resources and opts to download them. Dependency fetches also happen after certain git operations, specifically on post checkout and post merge (Invoked by git hooks <code class="language-plaintext highlighter-rouge">.git\hooks</code>, as <code class="language-plaintext highlighter-rouge">post-checkout</code>, <code class="language-plaintext highlighter-rouge">post-merge</code>).</p>
+
+<p>This is really painful and tedious on slow connections, you can opt to reduce the redundant downloads by caching the binaries by setting up the <code class="language-plaintext highlighter-rouge">UE4_GITDEPS_ARGS</code> environment variable, which as you can guess, passes additional arguments the GitDependency tool. All we care about now is caching, but there’s a few other arguments you can play around with.</p>
+
+<div class="language-powershell highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">PS</span><span class="w"> </span><span class="nx">C:\Users\markjg\clones\UnrealEngineFive</span><span class="err">&gt;</span><span class="w"> </span><span class="o">.</span><span class="nx">\Engine\Binaries\DotNET\GitDependencies.exe</span><span class="w"> </span><span class="nf">?</span><span class="w">
+</span><span class="nx">Invalid</span><span class="w"> </span><span class="nx">command</span><span class="w"> </span><span class="nx">line</span><span class="w"> </span><span class="nx">parameter:</span><span class="w"> </span><span class="nf">?</span><span class="w">
+
+</span><span class="n">Usage:</span><span class="w">
+   </span><span class="nx">GitDependencies</span><span class="w"> </span><span class="p">[</span><span class="n">options</span><span class="p">]</span><span class="w">
+
+</span><span class="n">Options:</span><span class="w">
+   </span><span class="nt">--all</span><span class="w">                         </span><span class="nx">Sync</span><span class="w"> </span><span class="nx">all</span><span class="w"> </span><span class="nx">folders</span><span class="w">
+   </span><span class="nt">--include</span><span class="o">=</span><span class="err">&lt;</span><span class="n">X</span><span class="err">&gt;</span><span class="w">                 </span><span class="nx">Include</span><span class="w"> </span><span class="nx">binaries</span><span class="w"> </span><span class="nx">in</span><span class="w"> </span><span class="nx">folders</span><span class="w"> </span><span class="nx">called</span><span class="w"> </span><span class="err">&lt;</span><span class="nx">X</span><span class="err">&gt;</span><span class="w">
+   </span><span class="nt">--exclude</span><span class="o">=</span><span class="err">&lt;</span><span class="n">X</span><span class="err">&gt;</span><span class="w">                 </span><span class="nx">Exclude</span><span class="w"> </span><span class="nx">binaries</span><span class="w"> </span><span class="nx">in</span><span class="w"> </span><span class="nx">folders</span><span class="w"> </span><span class="nx">called</span><span class="w"> </span><span class="err">&lt;</span><span class="nx">X</span><span class="err">&gt;</span><span class="w">
+   </span><span class="nt">--prompt</span><span class="w">                      </span><span class="n">Prompt</span><span class="w"> </span><span class="nx">before</span><span class="w"> </span><span class="nx">overwriting</span><span class="w"> </span><span class="nx">modified</span><span class="w"> </span><span class="nx">files</span><span class="w">
+   </span><span class="nt">--force</span><span class="w">                       </span><span class="n">Always</span><span class="w"> </span><span class="nx">overwrite</span><span class="w"> </span><span class="nx">modified</span><span class="w"> </span><span class="nx">files</span><span class="w">
+   </span><span class="nt">--root</span><span class="o">=</span><span class="err">&lt;</span><span class="n">PATH</span><span class="err">&gt;</span><span class="w">                 </span><span class="nx">Set</span><span class="w"> </span><span class="nx">the</span><span class="w"> </span><span class="nx">repository</span><span class="w"> </span><span class="nx">directory</span><span class="w"> </span><span class="nx">to</span><span class="w"> </span><span class="nx">be</span><span class="w"> </span><span class="nx">sync</span><span class="w">
+   </span><span class="nt">--threads</span><span class="o">=</span><span class="err">&lt;</span><span class="n">N</span><span class="err">&gt;</span><span class="w">                 </span><span class="nx">Use</span><span class="w"> </span><span class="nx">N</span><span class="w"> </span><span class="nx">threads</span><span class="w"> </span><span class="nx">when</span><span class="w"> </span><span class="nx">downloading</span><span class="w"> </span><span class="nx">new</span><span class="w"> </span><span class="nx">files</span><span class="w">
+   </span><span class="nt">--dry-run</span><span class="w">                     </span><span class="n">Print</span><span class="w"> </span><span class="nx">a</span><span class="w"> </span><span class="nx">list</span><span class="w"> </span><span class="nx">of</span><span class="w"> </span><span class="nx">outdated</span><span class="w"> </span><span class="nx">files</span><span class="w"> </span><span class="nx">and</span><span class="w"> </span><span class="nx">exit</span><span class="w">
+   </span><span class="nt">--max-retries</span><span class="w">                 </span><span class="n">Override</span><span class="w"> </span><span class="nx">maximum</span><span class="w"> </span><span class="nx">number</span><span class="w"> </span><span class="nx">of</span><span class="w"> </span><span class="nx">retries</span><span class="w"> </span><span class="nx">per</span><span class="w"> </span><span class="nx">file</span><span class="w">
+   </span><span class="nt">--proxy</span><span class="o">=</span><span class="err">&lt;</span><span class="n">user:password</span><span class="err">@</span><span class="nx">url</span><span class="err">&gt;</span><span class="w">   </span><span class="nx">Sets</span><span class="w"> </span><span class="nx">the</span><span class="w"> </span><span class="nx">HTTP</span><span class="w"> </span><span class="nx">proxy</span><span class="w"> </span><span class="nx">address</span><span class="w"> </span><span class="nx">and</span><span class="w"> </span><span class="nx">credentials</span><span class="w">
+   </span><span class="nt">--cache</span><span class="o">=</span><span class="err">&lt;</span><span class="n">PATH</span><span class="err">&gt;</span><span class="w">                </span><span class="nx">Specifies</span><span class="w"> </span><span class="nx">a</span><span class="w"> </span><span class="nx">custom</span><span class="w"> </span><span class="nx">path</span><span class="w"> </span><span class="nx">for</span><span class="w"> </span><span class="nx">the</span><span class="w"> </span><span class="nx">download</span><span class="w"> </span><span class="nx">cache</span><span class="w">
+   </span><span class="nt">--cache-size-multiplier</span><span class="o">=</span><span class="err">&lt;</span><span class="n">N</span><span class="err">&gt;</span><span class="w">   </span><span class="nx">Cache</span><span class="w"> </span><span class="nx">size</span><span class="w"> </span><span class="nx">as</span><span class="w"> </span><span class="nx">multiplier</span><span class="w"> </span><span class="nx">of</span><span class="w"> </span><span class="nx">current</span><span class="w"> </span><span class="nx">download</span><span class="w">
+   </span><span class="nt">--cache-days</span><span class="o">=</span><span class="err">&lt;</span><span class="n">N</span><span class="err">&gt;</span><span class="w">              </span><span class="nx">Number</span><span class="w"> </span><span class="nx">of</span><span class="w"> </span><span class="nx">days</span><span class="w"> </span><span class="nx">to</span><span class="w"> </span><span class="nx">keep</span><span class="w"> </span><span class="nx">entries</span><span class="w"> </span><span class="nx">in</span><span class="w"> </span><span class="nx">the</span><span class="w"> </span><span class="nx">cache</span><span class="w">
+   </span><span class="nt">--no-cache</span><span class="w">                    </span><span class="n">Disable</span><span class="w"> </span><span class="nx">caching</span><span class="w"> </span><span class="nx">of</span><span class="w"> </span><span class="nx">downloaded</span><span class="w"> </span><span class="nx">files</span><span class="w">
+
+</span><span class="n">Detected</span><span class="w"> </span><span class="nx">settings:</span><span class="w">
+   </span><span class="n">Excluded</span><span class="w"> </span><span class="nx">folders:</span><span class="w"> </span><span class="nx">none</span><span class="w">
+   </span><span class="n">Proxy</span><span class="w"> </span><span class="nx">server:</span><span class="w"> </span><span class="nx">none</span><span class="w">
+   </span><span class="n">Download</span><span class="w"> </span><span class="nx">cache:</span><span class="w"> </span><span class="nx">C:\Users\markjg\clones\GitDepsCache</span><span class="w">
+
+</span><span class="n">Default</span><span class="w"> </span><span class="nx">arguments</span><span class="w"> </span><span class="nx">can</span><span class="w"> </span><span class="nx">be</span><span class="w"> </span><span class="nx">set</span><span class="w"> </span><span class="nx">through</span><span class="w"> </span><span class="nx">the</span><span class="w"> </span><span class="nx">UE4_GITDEPS_ARGS</span><span class="w"> </span><span class="nx">environment</span><span class="w"> </span><span class="nx">variable.</span><span class="w">
+</span></code></pre></div></div>
+
+<p>That’s it.</p>
+
+        
+      </section>
+
+      <footer class="page__meta">
+        
+        
+  
+
+
+  
+
+  <p class="page__taxonomy">
+    <strong><i class="fas fa-fw fa-tags" aria-hidden="true"></i> Tags: </strong>
+    <span itemprop="keywords">
+    
+      <a href="/pages/MarkJGx/tags/tips" class="page__taxonomy-item p-category" rel="tag">tips</a><span class="sep">, </span>
+    
+      <a href="/pages/MarkJGx/tags/unreal" class="page__taxonomy-item p-category" rel="tag">unreal</a>
+    
+    </span>
+  </p>
+
+
+
+
+  
+
+
+  
+
+  <p class="page__taxonomy">
+    <strong><i class="fas fa-fw fa-folder-open" aria-hidden="true"></i> Categories: </strong>
+    <span itemprop="keywords">
+    
+      <a href="/pages/MarkJGx/categories/blog" class="page__taxonomy-item p-category" rel="tag">Blog</a>
+    
+    </span>
+  </p>
+
+
+        
+
+  <p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time class="dt-published" datetime="2022-01-09T00:00:00+02:00">January 9, 2022</time></p>
+
+      </footer>
+
+      
+
+      
+  <nav class="pagination">
+    
+      <a href="#" class="pagination--pager disabled">Previous</a>
+    
+    
+      <a href="/pages/MarkJGx/blog/debugging-uht/" class="pagination--pager" title="Debugging the Unreal Header Tool (UHT)
+">Next</a>
+    
+  </nav>
+
+    </div>
+
+    
+      <div class="page__comments">
+  
+  
+      <h4 class="page__comments-title">Comments</h4>
+      <section id="utterances-comments"></section>
+    
+</div>
+
+    
+  </article>
+
+  
+  
+</div>
+
+    </div>
+
+    
+      <div class="search-content">
+        <div class="search-content__inner-wrap">
+<form class="search-content__form" onkeydown="return event.key != 'Enter';" role="search">
+    <label class="sr-only" for="search">
+      Enter your search term...
+    </label>
+    <input type="search" id="search" class="search-input" tabindex="-1" placeholder="Enter your search term...">
+  </form>
+  <div id="results" class="results"></div>
+</div>
+
+      </div>
+    
+
+    <div id="footer" class="page__footer">
+      <footer>
+        <!-- start custom footer snippets -->
+
+<!-- end custom footer snippets -->
+        <div class="page__footer-follow">
+  <ul class="social-icons">
+    
+
+    
+      
+        
+          <li><a href="https://twitter.com/MarkJGx" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-twitter-square" aria-hidden="true"></i> Twitter</a></li>
+        
+      
+        
+          <li><a href="https://github.com/MarkJGx" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-github" aria-hidden="true"></i> GitHub</a></li>
+        
+      
+    
+
+    
+      <li><a href="/pages/MarkJGx/feed.xml"><i class="fas fa-fw fa-rss-square" aria-hidden="true"></i> Feed</a></li>
+    
+  </ul>
+</div>
+
+<div class="page__footer-copyright">© 2022 Mark J. G's programming blog. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.</div>
+
+      </footer>
+    </div>
+
+    
+  <script src="/pages/MarkJGx/assets/js/main.min.js"></script>
+
+
+
+
+<script src="/pages/MarkJGx/assets/js/lunr/lunr.min.js"></script>
+<script src="/pages/MarkJGx/assets/js/lunr/lunr-store.js"></script>
+<script src="/pages/MarkJGx/assets/js/lunr/lunr-en.js"></script>
+
+
+
+
+    <script>
+  'use strict';
+
+  (function() {
+    var commentContainer = document.querySelector('#utterances-comments');
+
+    if (!commentContainer) {
+      return;
+    }
+
+    var script = document.createElement('script');
+    script.setAttribute('src', 'https://utteranc.es/client.js');
+    script.setAttribute('repo', 'MarkJGx/markjgx.github.io');
+    script.setAttribute('issue-term', 'pathname');
+    
+    script.setAttribute('theme', 'github-light');
+    script.setAttribute('crossorigin', 'anonymous');
+
+    commentContainer.appendChild(script);
+  })();
+</script>
+
+  
+
+
+
+
+
+  </body>
+</html>

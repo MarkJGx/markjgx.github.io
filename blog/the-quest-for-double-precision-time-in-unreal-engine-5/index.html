@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<!--
+  Minimal Mistakes Jekyll Theme 4.24.0 by Michael Rose
+  Copyright 2013-2020 Michael Rose - mademistakes.com | @mmistakes
+  Free for personal and commercial use under the MIT license
+  https://github.com/mmistakes/minimal-mistakes/blob/master/LICENSE
+--><html lang="en" class="no-js">
+  <head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="utf-8">
+
+<!-- begin _includes/seo.html --><title>The quest for double precision time in Unreal Engine 5 - Mark J. G’s programming blog</title>
+<meta name="description" content="The Preface">
+
+
+  <meta name="author" content="MarkJGx">
+  
+  <meta property="article:author" content="MarkJGx">
+  
+
+
+<meta property="og:type" content="article">
+<meta property="og:locale" content="en_US">
+<meta property="og:site_name" content="Mark J. G's programming blog">
+<meta property="og:title" content="The quest for double precision time in Unreal Engine 5">
+<meta property="og:url" content="https://github.com/pages/MarkJGx/blog/the-quest-for-double-precision-time-in-unreal-engine-5/">
+
+
+  <meta property="og:description" content="The Preface">
+
+
+
+
+
+
+
+  <meta property="article:published_time" content="2022-10-14T00:00:00+03:00">
+
+
+
+
+
+
+<link rel="canonical" href="https://github.com/pages/MarkJGx/blog/the-quest-for-double-precision-time-in-unreal-engine-5/">
+
+
+
+
+<script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    
+      "@type": "Person",
+      "name": null,
+      "url": "https://github.com/pages/MarkJGx/"
+    
+  }
+</script>
+
+
+
+
+
+
+
+<!-- end _includes/seo.html -->
+
+
+
+  <link href="/pages/MarkJGx/feed.xml" type="application/atom+xml" rel="alternate" title="Mark J. G's programming blog Feed">
+
+
+<!-- https://t.co/dKP3o1e -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script>
+  document.documentElement.className = document.documentElement.className.replace(/\bno-js\b/g, '') + ' js ';
+</script>
+
+<!-- For all browsers -->
+<link rel="stylesheet" href="/pages/MarkJGx/assets/css/main.css">
+<link rel="preload" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5/css/all.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5/css/all.min.css"></noscript>
+
+
+
+    <!-- start custom head snippets -->
+
+<!-- insert favicons. use https://realfavicongenerator.net/ -->
+
+<!-- end custom head snippets -->
+
+  </head>
+
+  <body class="layout--single">
+    <nav class="skip-links">
+  <ul>
+    <li><a href="#site-nav" class="screen-reader-shortcut">Skip to primary navigation</a></li>
+    <li><a href="#main" class="screen-reader-shortcut">Skip to content</a></li>
+    <li><a href="#footer" class="screen-reader-shortcut">Skip to footer</a></li>
+  </ul>
+</nav>
+
+    
+
+<div class="masthead">
+  <div class="masthead__inner-wrap">
+    <div class="masthead__menu">
+      <nav id="site-nav" class="greedy-nav">
+        
+        <a class="site-title" href="/pages/MarkJGx/">
+          Mark J. G's programming blog
+          
+        </a>
+        <ul class="visible-links">
+<li class="masthead__menu-item">
+              <a href="/pages/MarkJGx/posts/">Posts</a>
+            </li>
+<li class="masthead__menu-item">
+              <a href="/pages/MarkJGx/categories/">Categories</a>
+            </li>
+<li class="masthead__menu-item">
+              <a href="/pages/MarkJGx/tags/">Tags</a>
+            </li>
+<li class="masthead__menu-item">
+              <a href="/pages/MarkJGx/about/">About</a>
+            </li>
+</ul>
+        
+        <button class="search__toggle" type="button">
+          <span class="visually-hidden">Toggle search</span>
+          <i class="fas fa-search"></i>
+        </button>
+        
+        <button class="greedy-nav__toggle hidden" type="button">
+          <span class="visually-hidden">Toggle menu</span>
+          <div class="navicon"></div>
+        </button>
+        <ul class="hidden-links hidden"></ul>
+      </nav>
+    </div>
+  </div>
+</div>
+
+
+    <div class="initial-content">
+      
+
+
+
+
+  
+    
+
+
+
+<nav class="breadcrumbs">
+  <ol itemscope itemtype="https://schema.org/BreadcrumbList">
+    
+    
+    
+      
+        <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+          <a href="/pages/MarkJGx/" itemprop="item"><span itemprop="name">Home</span></a>
+
+          <meta itemprop="position" content="1">
+        </li>
+        <span class="sep">/</span>
+      
+      
+        
+        <li itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
+          <a href="/pages/MarkJGx/categories/blog" itemprop="item"><span itemprop="name">Blog</span></a>
+          <meta itemprop="position" content="2">
+        </li>
+        <span class="sep">/</span>
+      
+    
+      
+      
+        <li class="current">The quest for double precision time in Unreal Engine 5</li>
+      
+    
+  </ol>
+</nav>
+
+  
+
+
+<div id="main" role="main">
+  
+
+
+  <article class="page h-entry" itemscope itemtype="https://schema.org/CreativeWork">
+    <meta itemprop="headline" content="The quest for double precision time in Unreal Engine 5">
+    <meta itemprop="description" content="The Preface">
+    <meta itemprop="datePublished" content="2022-10-14T00:00:00+03:00">
+    
+
+    <div class="page__inner-wrap">
+      
+        <header>
+          <h1 id="page-title" class="page__title p-name" itemprop="headline">
+            <a href="https://github.com/pages/MarkJGx/blog/the-quest-for-double-precision-time-in-unreal-engine-5/" class="u-url" itemprop="url">The quest for double precision time in Unreal Engine 5
+</a>
+          </h1>
+          
+
+  <p class="page__meta">
+    
+      
+      <span class="page__meta-date">
+        <i class="far fa-calendar-alt" aria-hidden="true"></i>
+        
+        <time datetime="2022-10-14T00:00:00+03:00">October 14, 2022</time>
+      </span>
+    
+
+    
+
+    
+  </p>
+
+
+        </header>
+      
+
+      <section class="page__content e-content" itemprop="text">
+        
+          <aside class="sidebar__right ">
+            <nav class="toc">
+              <header><h4 class="nav__title">
+<i class="fas fa-file-alt"></i> On this page</h4></header>
+              <ul class="toc__menu">
+<li><a href="#the-preface">The Preface</a></li>
+<li><a href="#the-why">The Why</a></li>
+<li>
+<a href="#the-pull-request">The Pull Request</a><ul>
+<li>
+<a href="#motivation">Motivation</a><ul>
+<li><a href="#underlying-precision-motivations">Underlying precision motivations</a></li>
+<li><a href="#case-by-case-motivations">Case by case motivations</a></li>
+</ul>
+</li>
+<li>
+<a href="#design-notes">Design notes</a><ul><li><a href="#uhtcode-gen">UHT/Code-gen</a></li></ul>
+</li>
+<li><a href="#engineering-impact">Engineering impact</a></li>
+</ul>
+</li>
+</ul>
+
+            </nav>
+          </aside>
+        
+        <h1 id="the-preface">The Preface</h1>
+
+<p>A long while ago I submitted a pull request to EpicGames/UnrealEngine’s main branch implementing a new reflected type called FTime.</p>
+
+<h1 id="the-why">The Why</h1>
+
+<p>Okay, cool… Why wouldn’t I just use a float instead?</p>
+
+<p>What is FTime?</p>
+<blockquote>
+  <p>FTime is essentially your normal floating point number, but with a catch! It’s specifically intended to be used with timestamps and any game related time functionality. Because sometimes single precision floating point isn’t enough for your grand massively multiplayer duck game, you need your server to up for a longer period of time without time related calculations going haywire because you’ve hit the limit of your precision. However, sometimes it IS enough and the cost double precision doesn’t really make sense. FTime can switch between double floating point precision and single floating point precision with a simple compile time toggle, assuming you’re using a source engine build.</p>
+</blockquote>
+
+<h1 id="the-pull-request">The Pull Request</h1>
+
+<p>The following is the description of the pull request I submitted (https://github.com/EpicGames/UnrealEngine/pull/9125)[here].</p>
+
+<p>## Objective</p>
+
+<p>This pull request introduces a new UHT compatible type called <code class="language-plaintext highlighter-rouge">FTime</code>, with the aim of solving the game time precision on a case by case basis in a similar fashion to LWC’s <code class="language-plaintext highlighter-rouge">FReal</code>.</p>
+
+<h2 id="motivation">Motivation</h2>
+
+<h3 id="underlying-precision-motivations">Underlying precision motivations</h3>
+<p>Single precision floating point does not offer enough precision for a long running dedicated server. The default server tick rate of 30 ticks per second (<code class="language-plaintext highlighter-rouge">NetServerMaxTickRate</code>’s default, precision: 1.0/30.0) would start experiencing time related issues after <code class="language-plaintext highlighter-rouge">6.1</code> days.</p>
+
+<p><img src="https://s0.wp.com/latex.php?latex=value+%3D+pow%282%2C+ceil%28log2%28mantissa+%2A+precision%29%29%29&amp;bg=ffffff&amp;fg=666666&amp;s=0&amp;c=20201002" alt="PrecisionFormula"> <a href="https://web.archive.org/web/20210116060658/https://blog.demofox.org/2017/11/21/floating-point-precision/">Source</a>
+With double precision floating point, the issues would go from appearing after <code class="language-plaintext highlighter-rouge">6.1</code> days to <code class="language-plaintext highlighter-rouge">8,925,512</code> years.</p>
+
+<h3 id="case-by-case-motivations">Case by case motivations</h3>
+<p>Nevertheless, outright converting every single usage of game time to a double wouldn’t be ideal. Not all games require double precision floating point time and the benefit from using single precision floating point could be more than marginal. Games that use short-lived worlds and replicate heavily could benefit from single precision. Or single-player mobile games,  why increase the underlying memory footprint just because dedicated servers can’t run for more than 6 days? How is that relevant to the target platform?</p>
+
+<h2 id="design-notes">Design notes</h2>
+<p><code class="language-plaintext highlighter-rouge">FTime</code> is a simple double/float alias that lives inside of <code class="language-plaintext highlighter-rouge">Math/Time.h</code>, it’s included in <code class="language-plaintext highlighter-rouge">CoreMinimal.h</code> which covers both programs and games. A new UnrealHeaderTool property called <code class="language-plaintext highlighter-rouge">FTimeProperty</code> has been introduced for the corresponding <code class="language-plaintext highlighter-rouge">FTime</code> type alias ensuring blueprint/reflection compatibility.</p>
+
+<h3 id="uhtcode-gen">UHT/Code-gen</h3>
+<p><code class="language-plaintext highlighter-rouge">FTimeProperty</code> traits are generated based on what the current <code class="language-plaintext highlighter-rouge">FTime</code> type is, the traits are chosen by a compile time inheritance conditional, picking either the double property trait or the float one. (Sidebar: I opted to the use UE type traits in this case instead of std’s, not sure what official usage stance is anymore.) When it comes to actually generating the underlying property params, I opt to fake a double/float EPropertyGenFlags based on the PropertyDef’s cpp type.</p>
+
+<div class="language-cpp highlighter-rouge"><div class="highlight"><pre class="highlight"><code>      <span class="c1">// Switch between EPropertyGenFlags Double and Float depending on FPropertyTypeTraitsTime parent, which in itself is driven by the udnerlying type of FTime.</span>
+      <span class="k">const</span> <span class="n">TCHAR</span><span class="o">*</span> <span class="n">PropertyGenFlag</span> <span class="o">=</span> <span class="n">PropertyDef</span><span class="p">.</span><span class="n">GetCPPType</span><span class="p">(</span><span class="nb">nullptr</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="o">==</span> <span class="n">TEXT</span><span class="p">(</span><span class="s">"double"</span><span class="p">)</span>
+                                       <span class="o">?</span> <span class="n">TEXT</span><span class="p">(</span><span class="s">"UECodeGen_Private::EPropertyGenFlags::Double"</span><span class="p">)</span>
+                                       <span class="o">:</span> <span class="n">TEXT</span><span class="p">(</span><span class="s">"UECodeGen_Private::EPropertyGenFlags::Float"</span><span class="p">);</span>
+</code></pre></div></div>
+<p>From my testing, works well.</p>
+
+<p>I originally wrote this on top <code class="language-plaintext highlighter-rouge">5.0.1</code> which doesn’t have the C# UHT version so that has not been implemented at the time of writing. Only old UHT is aware of <code class="language-plaintext highlighter-rouge">FTimeProperty</code>.</p>
+
+<h2 id="engineering-impact">Engineering impact</h2>
+<p>Depending on what happens with this pull request, the ability to change the underlying FTime type would require a custom engine fork, which wouldn’t be an issue for most developers interested in this type of change.</p>
+
+<p>Thanks for reading.</p>
+
+<p>P.S: looks like the cherry picks I made from my engine branch have brought back some 5.0.1 code, will address in the morning.
+EDIT: needs a bit of additional with regards to 0.0f and 0.0 consistency, backwards compat in the DemoNetDriver serializer, a few invalid uses of FTime, and C# UHT.</p>
+
+
+        
+      </section>
+
+      <footer class="page__meta">
+        
+        
+  
+
+
+  
+
+  <p class="page__taxonomy">
+    <strong><i class="fas fa-fw fa-tags" aria-hidden="true"></i> Tags: </strong>
+    <span itemprop="keywords">
+    
+      <a href="/pages/MarkJGx/tags/pull-request" class="page__taxonomy-item p-category" rel="tag">pull-request</a><span class="sep">, </span>
+    
+      <a href="/pages/MarkJGx/tags/ue5" class="page__taxonomy-item p-category" rel="tag">ue5</a><span class="sep">, </span>
+    
+      <a href="/pages/MarkJGx/tags/unreal" class="page__taxonomy-item p-category" rel="tag">unreal</a>
+    
+    </span>
+  </p>
+
+
+
+
+  
+
+
+  
+
+  <p class="page__taxonomy">
+    <strong><i class="fas fa-fw fa-folder-open" aria-hidden="true"></i> Categories: </strong>
+    <span itemprop="keywords">
+    
+      <a href="/pages/MarkJGx/categories/blog" class="page__taxonomy-item p-category" rel="tag">Blog</a>
+    
+    </span>
+  </p>
+
+
+        
+
+  <p class="page__date"><strong><i class="fas fa-fw fa-calendar-alt" aria-hidden="true"></i> Updated:</strong> <time class="dt-published" datetime="2022-10-14T00:00:00+03:00">October 14, 2022</time></p>
+
+      </footer>
+
+      
+
+      
+  <nav class="pagination">
+    
+      <a href="/pages/MarkJGx/blog/physx-in-ue5/" class="pagination--pager" title="PhysX/APEX in Unreal Engine 5
+">Previous</a>
+    
+    
+      <a href="/pages/MarkJGx/blog/web-assembly-in-unreal-not-the-way-around/" class="pagination--pager" title="WebAssembly in Unreal, not the other way around!
+">Next</a>
+    
+  </nav>
+
+    </div>
+
+    
+      <div class="page__comments">
+  
+  
+      <h4 class="page__comments-title">Comments</h4>
+      <section id="utterances-comments"></section>
+    
+</div>
+
+    
+  </article>
+
+  
+  
+</div>
+
+    </div>
+
+    
+      <div class="search-content">
+        <div class="search-content__inner-wrap">
+<form class="search-content__form" onkeydown="return event.key != 'Enter';" role="search">
+    <label class="sr-only" for="search">
+      Enter your search term...
+    </label>
+    <input type="search" id="search" class="search-input" tabindex="-1" placeholder="Enter your search term...">
+  </form>
+  <div id="results" class="results"></div>
+</div>
+
+      </div>
+    
+
+    <div id="footer" class="page__footer">
+      <footer>
+        <!-- start custom footer snippets -->
+
+<!-- end custom footer snippets -->
+        <div class="page__footer-follow">
+  <ul class="social-icons">
+    
+
+    
+      
+        
+          <li><a href="https://twitter.com/MarkJGx" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-twitter-square" aria-hidden="true"></i> Twitter</a></li>
+        
+      
+        
+          <li><a href="https://github.com/MarkJGx" rel="nofollow noopener noreferrer"><i class="fab fa-fw fa-github" aria-hidden="true"></i> GitHub</a></li>
+        
+      
+    
+
+    
+      <li><a href="/pages/MarkJGx/feed.xml"><i class="fas fa-fw fa-rss-square" aria-hidden="true"></i> Feed</a></li>
+    
+  </ul>
+</div>
+
+<div class="page__footer-copyright">© 2022 Mark J. G's programming blog. Powered by <a href="https://jekyllrb.com" rel="nofollow">Jekyll</a> &amp; <a href="https://mademistakes.com/work/minimal-mistakes-jekyll-theme/" rel="nofollow">Minimal Mistakes</a>.</div>
+
+      </footer>
+    </div>
+
+    
+  <script src="/pages/MarkJGx/assets/js/main.min.js"></script>
+
+
+
+
+<script src="/pages/MarkJGx/assets/js/lunr/lunr.min.js"></script>
+<script src="/pages/MarkJGx/assets/js/lunr/lunr-store.js"></script>
+<script src="/pages/MarkJGx/assets/js/lunr/lunr-en.js"></script>
+
+
+
+
+    <script>
+  'use strict';
+
+  (function() {
+    var commentContainer = document.querySelector('#utterances-comments');
+
+    if (!commentContainer) {
+      return;
+    }
+
+    var script = document.createElement('script');
+    script.setAttribute('src', 'https://utteranc.es/client.js');
+    script.setAttribute('repo', 'MarkJGx/markjgx.github.io');
+    script.setAttribute('issue-term', 'pathname');
+    
+    script.setAttribute('theme', 'github-light');
+    script.setAttribute('crossorigin', 'anonymous');
+
+    commentContainer.appendChild(script);
+  })();
+</script>
+
+  
+
+
+
+
+
+  </body>
+</html>
