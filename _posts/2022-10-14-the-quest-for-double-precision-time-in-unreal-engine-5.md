@@ -21,9 +21,9 @@ What is FTime?
 
 # The Pull Request
 
-The following is the description of the pull request I submitted (https://github.com/EpicGames/UnrealEngine/pull/9125)[here].
+The following is the description of the pull request I submitted (here)(https://github.com/EpicGames/UnrealEngine/pull/9125].
 
- ## Objective
+## Objective
 
 This pull request introduces a new UHT compatible type called `FTime`, with the aim of solving the game time precision on a case by case basis in a similar fashion to LWC's `FReal`. 
 
