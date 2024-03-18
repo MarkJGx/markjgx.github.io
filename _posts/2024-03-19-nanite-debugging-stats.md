@@ -10,8 +10,7 @@ tags:
 # tldr;
 
 To get this Nanite stat visualization on the screen, type `NaniteStats` into the nearest Unreal viewport console.
-![NaniteStats](/assets/images/nanitestatsdebugepicnanitelivestream.png)
-
+![https://www.youtube.com/watch?v=TMorJX3Nj6U&t=542s](/assets/images/nanitestatsdebugepicnanitelivestream.png)
 
 This uses a cool piece of technology that Epic built, letting them raster imgui-esque graphics straight from a shader. The system is called `ShaderPrint`. This totally makes sense, ever since Epic shifted its internal renderer to a more modern GPU driven system, compute shaders and its brethren dominate rendering logic. Shaders aren't relegated to vertex transposition and pixel shading. Welcome to the future!.. Welcome to *cough* ~2015. Grumpy jokes aside, `NaniteStats` is a console command, and the last time I checked those types of viewport console inputs don't auto complete (last time I checked being 5.3).
 
