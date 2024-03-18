@@ -24,4 +24,4 @@ This console command accepts a single argument, that lowercase argument can be o
 
 Scene is ["Corridor" by Dylan Browne](https://x.com/DylserX/status/1685927605701406721?s=20). 
 
-That's it. P.S: when I started writing this article I wanted to make it into a bigger thing exploring ShaderPrint and its implementation, however that would have taken orders of magnitude more time than just this initial piece. Hope this helps.
+That's it. P.S: when I started writing this article I wanted to make it into a bigger thing exploring ShaderPrint and its implementation, however that would have taken an order of magnitude time longer than just this initial piece. Hope this helps.
