@@ -20,7 +20,7 @@ This console command accepts a single argument, that lowercase argument can be o
 - `*` - specify a custom Nanite stat filter. Like `VirtualShadowMaps`. 
 - `off`
 
-![NaniteStats](/assets/videos/vlc-record-2024-03-19-01h09m36s-Coffee_t5XSUzZtqx.mp4)
+![NaniteStats](/assets/images/vlcsnap-2024-03-19-23h59m47s443.png)
 
 Scene is ["Corridor" by Dylan Browne](https://x.com/DylserX/status/1685927605701406721?s=20). 
 
